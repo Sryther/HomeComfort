@@ -2,11 +2,10 @@ import mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
 import Models from '../../lib/xiaomi/models';
+import IXiaomiDevice from './IXiaomiDevice';
 
-export interface IRoborock {
+export interface IRoborock extends IXiaomiDevice {
     name: String,
-    token: String,
-    ip: String,
     type: String
 }
 
