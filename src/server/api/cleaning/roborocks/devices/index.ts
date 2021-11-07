@@ -1,19 +1,15 @@
-import express from 'express';
 import * as miio from 'miio';
-import Roborock from "../../../../data/models/Roborock";
-import * as CRUD from "./crud";
+import {Request, Response, NextFunction} from "express";
 
+import Roborock from "../../../../data/models/cleaning/roborock/Roborock";
+import * as CRUD from "./RoborockDevicesCRUD";
 import CapabilitiesApi from "./capabilities";
 import MapApi from "./map";
+import CRUDRouting from "../../../../lib/api/CRUDRouting";
 
-const router = express.Router();
+const router = CRUDRouting.createRouter(CRUD);
 
-router.get('/', CRUD.all);
-router.get('/:id', CRUD.get);
-router.post('/', CRUD.create);
-router.delete('/:id', CRUD.remove);
-
-router.get('/:id/info', async (req: any, res: any, next: any) => {
+router.get('/:id/info', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const roborock = await Roborock.findById(req.params.id);
 

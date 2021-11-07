@@ -1,12 +1,14 @@
-import express from 'express';
-import DevicesApi from './devices';
+import * as express from 'express';
 import * as miio from 'miio';
+import {Request, Response, NextFunction} from "express";
+
+import DevicesApi from './devices';
 
 const router = express.Router();
 
 router.use('/devices', DevicesApi);
 
-router.get('/browse', async (req: any, res: any, next: any) => {
+router.get('/browse', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const devices = miio.browse();
 

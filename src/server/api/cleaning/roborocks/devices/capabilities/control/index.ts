@@ -1,10 +1,12 @@
-import Roborock from "../../../../../../data/models/Roborock";
+import {Request, Response, NextFunction} from "express";
 import miio from "miio";
 import _ from "lodash";
 
-import CapabilitiesActionAssociation from "./capabilities-action-association";
+import Roborock from "../../../../../../data/models/cleaning/roborock/Roborock";
 
-const doAction = async (req: any, res: any, next: any) => {
+import CapabilitiesActionAssociation from "./CapabilitiesActionAssociation";
+
+const doAction = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const roborock = await Roborock.findById(req.params.id);
 

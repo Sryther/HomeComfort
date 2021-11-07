@@ -1,3 +1,5 @@
+<img src="../../assets/img/logo-766x766.png" alt="Helix logo" width="256px" height="256px"/>
+
 ## Help
 
 ### Running a development MongoDB instance

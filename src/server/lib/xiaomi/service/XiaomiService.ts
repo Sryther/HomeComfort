@@ -2,12 +2,12 @@ import crypto from "crypto";
 import axios, { AxiosResponse } from "axios";
 import _ from "lodash";
 import miio from "miio";
+import { ungzip } from "node-gzip";
 
-import { RoborockDocument } from "../../../data/models/Roborock";
+import { RoborockDocument } from "../../../data/models/cleaning/roborock/Roborock";
 import IXiaomiDevice from "../../../data/models/IXiaomiDevice";
-import XiaomiMapParser from "./XiaomiMapParser";
+import RRMapParser from "./RRMapParser";
 import Map from "../models/entities/map/Map";
-import * as zlib from "zlib";
 
 const XIAOMI_BASE_URL = "https://account.xiaomi.com";
 
@@ -213,12 +213,12 @@ class XiaomiService {
             });
 
             const dataBuffer = response.data;
-            const preprocessedMapBuffer = await this.preprocessMap(dataBuffer);
-            const map: Map = new XiaomiMapParser(preprocessedMapBuffer).parse();
+            const preprocessedMapBuffer = await XiaomiService.preprocessMap(dataBuffer);
+            const map: Map | null = RRMapParser.PARSE(preprocessedMapBuffer);
 
             return Promise.resolve(map);
         } catch (e) {
-            console.log("Cannot get map");
+            console.log("Cannot get map", e);
             return Promise.reject(e);
         }
     }
@@ -320,10 +320,8 @@ class XiaomiService {
             .toString("base64");
     }
 
-    private preprocessMap(data: Buffer): Promise<Buffer> {
-        return new Promise((resolve, reject) => {
-            zlib.gunzip(data, (err, result) => err ? reject(err) : resolve(result));
-        });
+    private static async preprocessMap(data: Buffer): Promise<Buffer> {
+        return await ungzip(data);
     }
 
     /**

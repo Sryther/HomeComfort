@@ -1,14 +1,21 @@
-import Roborock from "../../../../../data/models/Roborock";
-import miio from "miio";
-import axios from "axios";
+import {Request, Response, NextFunction} from "express";
+
+import Roborock from "../../../../../data/models/cleaning/roborock/Roborock";
 import XiaomiService from "../../../../../lib/xiaomi/service/XiaomiService";
 
-const getMap = async (req: any, res: any, next: any) => {
+const getMap = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const roborock = await Roborock.findById(req.params.id);
 
         if (roborock) {
-            const xiaomiService = new XiaomiService(req.query.username, req.query.password);
+            let username: string, password: string;
+            if (req.query.username && req.query.password) {
+                username = req.query.username.toString();
+                password = req.query.password.toString();
+            } else {
+                return res.sendStatus(400);
+            }
+            const xiaomiService = new XiaomiService(username, password);
             const map = await xiaomiService.getMap(roborock);
 
             return res.status(200).send(map);
@@ -19,7 +26,5 @@ const getMap = async (req: any, res: any, next: any) => {
         return res.status(500).send(e);
     }
 };
-
-
 
 export default { getMap };

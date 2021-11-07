@@ -1,10 +1,12 @@
-import Roborock from "../../../../../data/models/Roborock";
+import {Request, Response, NextFunction} from "express";
 import miio from "miio";
+
+import Roborock from "../../../../../data/models/cleaning/roborock/Roborock";
 
 import ControlApi from "./control";
 import StateApi from "./state";
 
-const getCapabilities = async (req: any, res: any, next: any) => {
+const getCapabilities = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const roborock = await Roborock.findById(req.params.id);
 

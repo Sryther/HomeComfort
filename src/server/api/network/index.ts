@@ -1,9 +1,8 @@
 import * as express from 'express';
-
-import RoborocksApi from "./roborocks";
+import EndpointsApi from './endpoints';
 
 const router = express.Router();
 
-router.use('/roborocks', RoborocksApi);
+router.use('/endpoints', EndpointsApi);
 
 export default router;

@@ -1,8 +1,8 @@
-import mongoose from 'mongoose';
+import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
-import Models from '../../lib/xiaomi/models';
-import IXiaomiDevice from './IXiaomiDevice';
+import Models from '../../../../lib/xiaomi/models';
+import IXiaomiDevice from '../../IXiaomiDevice';
 
 export interface IRoborock extends IXiaomiDevice {
     name: String,

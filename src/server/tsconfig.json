@@ -74,9 +74,10 @@
       "*": [
         "node_modules/*"
       ]
-    }
+    },
+    "jsx": "react"
   },
   "include": [
-    "src/**/*"
+    "./*"
   ]
 }

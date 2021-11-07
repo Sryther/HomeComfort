@@ -1,7 +1,9 @@
-import Roborock from "../../../../../../data/models/Roborock";
+import {Request, Response, NextFunction} from "express";
 import miio from "miio";
 
-const getState = async (req: any, res: any, next: any) => {
+import Roborock from "../../../../../../data/models/cleaning/roborock/Roborock";
+
+const getState = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const roborock = await Roborock.findById(req.params.id);
 
@@ -17,7 +19,7 @@ const getState = async (req: any, res: any, next: any) => {
     }
 };
 
-const getSpecificState = async (req: any, res: any, next: any) => {
+const getSpecificState = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const roborock = await Roborock.findById(req.params.id);
         const params = req.params.data;
