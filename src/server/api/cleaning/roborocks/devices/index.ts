@@ -2,12 +2,11 @@ import * as miio from 'miio';
 import {Request, Response, NextFunction} from "express";
 
 import Roborock from "../../../../data/models/cleaning/roborock/Roborock";
-import * as CRUD from "./RoborockDevicesCRUD";
 import CapabilitiesApi from "./capabilities";
 import MapApi from "./map";
 import CRUDRouting from "../../../../lib/api/CRUDRouting";
 
-const router = CRUDRouting.createRouter(CRUD);
+const router = CRUDRouting.createRouter(new CRUDRouting.CRUDRouter<typeof Roborock>(Roborock));
 
 router.get('/:id/info', async (req: Request, res: Response, next: NextFunction) => {
     try {

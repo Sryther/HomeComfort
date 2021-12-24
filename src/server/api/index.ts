@@ -1,6 +1,9 @@
 import express, { Router } from 'express';
+import redoc from 'redoc-express';
+import ExpressSwaggerGenerator from 'express-swagger-generator';
 import * as bodyParser from 'body-parser';
 import morgan from 'morgan';
+import getPackageVersion from '@jsbits/get-package-version'
 
 import CleaningApi from './cleaning';
 import LayoutsApi from './layouts';
@@ -9,6 +12,7 @@ import AirApi from './air';
 
 const App = express();
 const router = Router();
+const expressSwagger = ExpressSwaggerGenerator(App);
 
 // Middlewares.
 App.use(bodyParser.json());
@@ -22,5 +26,35 @@ router.use('/air', AirApi)
 
 // Final path.
 App.use('/api', router);
+
+// Documentation
+let docOptions = {
+    swaggerDefinition: {
+        info: {
+            description: 'Helix server',
+            title: 'Helix',
+            version: getPackageVersion(),
+        },
+        host: 'localhost:3000',
+        basePath: '/',
+        produces: [
+            "application/json",
+            "application/xml"
+        ],
+        schemes: ['http', 'https']
+    },
+    basedir: __dirname, // app absolute path
+    files: ['./routes/**/*.js'] //Path to the API handle folder
+};
+
+expressSwagger(docOptions);
+
+App.get(
+    '/docs',
+    redoc({
+        title: 'API Docs',
+        specUrl: '/api-docs.json'
+    })
+);
 
 export default App;

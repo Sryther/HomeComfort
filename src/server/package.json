@@ -4,6 +4,7 @@
   "description": "<img src=\"./assets/img/logo-766x766.png\" alt=\"Helix logo\" width=\"256px\" height=\"256px\"/>",
   "main": "index.js",
   "dependencies": {
+    "@jsbits/get-package-version": "^1.0.3",
     "@types/md5": "^2.3.0",
     "abstract-things": "^0.9.0",
     "axios": "^0.21.1",
@@ -13,6 +14,7 @@
     "debug": "^4.3.1",
     "deep-equal": "^2.0.5",
     "express": "^4.17.1",
+    "express-swagger-generator": "^1.1.17",
     "is-ip": "^3.1.0",
     "is-mac-address": "^1.0.4",
     "lodash": "^4.17.21",

@@ -1,11 +1,11 @@
-import * as CRUD from "./DaikinAirConditionerCRUD";
 import CRUDRouting from "../../../lib/api/CRUDRouting";
 import ActionsAPI from "./Actions";
+import AirConditionner from "../../../data/models/air/daikin/AirConditionner";
 
-const router = CRUDRouting.createRouter(CRUD);
+const router = CRUDRouting.createRouter(new CRUDRouting.CRUDRouter<typeof AirConditionner>(AirConditionner));
 
 router.post("/discover", ActionsAPI.discover);
 router.get("/:id/information", ActionsAPI.getInformation);
-router.post("/:id/change-temperature", ActionsAPI.changeTemp);
+router.put("/:id/set-values", ActionsAPI.setValues);
 
 export default router;

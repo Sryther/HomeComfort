@@ -14,7 +14,8 @@ db.once('open', () => {
 const server = Api.listen(Config.api.port, 'localhost', () => {
     const {port, address} = server.address() as AddressInfo;
 
-    console.log('Server listening on:', `http://${address}:${port}`);
+    console.log(`Server listening on: http://${address}:${port}`);
+    console.log(`Online documentation available on http://${address}:${port}/docs`)
 });
 
 console.log(getRoutes(Api));

@@ -1,6 +1,6 @@
 import CRUDRouting from "../../../lib/api/CRUDRouting";
-import * as CRUD from "./CompositionsCRUD";
+import CompositionsCRUDRouter from "./CompositionsCRUD";
 
-const router = CRUDRouting.createRouter(CRUD);
+const router = CRUDRouting.createRouter(new CompositionsCRUDRouter());
 
 export default router;
