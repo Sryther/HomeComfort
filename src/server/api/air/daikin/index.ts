@@ -7,5 +7,6 @@ const router = CRUDRouting.createRouter(new CRUDRouting.CRUDRouter<typeof AirCon
 router.post("/discover", ActionsAPI.discover);
 router.get("/:id/information", ActionsAPI.getInformation);
 router.put("/:id/set-values", ActionsAPI.setValues);
+router.post("/:id/set-values", ActionsAPI.setValues);
 
 export default router;

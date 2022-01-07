@@ -5,6 +5,23 @@ import _ from "lodash";
 import Roborock from "../../../../../../data/models/cleaning/roborock/Roborock";
 
 import CapabilitiesActionAssociation from "./CapabilitiesActionAssociation";
+import CRONManager from "../../../../../../lib/api/CRONManager";
+
+function generateDescription(action: any): string {
+    if (action === "app_start") {
+        return "Démarrer le nettoyage";
+    }
+    if (action === "app_stop") {
+        return "Stopper le nettoyage";
+    }
+    if (action === "app_pause") {
+        return "Pause du nettoyage";
+    }
+    if (action === "fanSpeed") {
+        return "Modifier la vitesse";
+    }
+    return action;
+}
 
 const doAction = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -29,23 +46,52 @@ const doAction = async (req: Request, res: Response, next: NextFunction) => {
             if (hasCapability) {
                 let resultAction;
 
-                if (_.isUndefined(isAdvancedCommand) || !isAdvancedCommand) {
-                    resultAction = await device.miioCall(action);
-                } else {
-                    // Actions doesn't work with empty params so we need to differentiate them.
-                    if (!_.isEmpty(data)) {
-                        resultAction = await device[action](data);
-                    } else {
-                        resultAction = await device[action]();
+                if (req.body.cronExpression) {
+                    const args = {
+                        action,
+                        data,
+                        isAdvancedCommand
+                    };
+
+                    if (_.isNil(args.data)) {
+                        delete args.data;
                     }
-                }
+                    if (_.isNil(args.action)) {
+                        delete args.action
+                    }
+                    if (_.isNil(args.isAdvancedCommand)) {
+                        delete args.isAdvancedCommand;
+                    }
 
-                // Express would send a warning if the result is an integer.
-                if (Number.isInteger(resultAction)) {
-                    resultAction = resultAction.toString();
-                }
+                    await CRONManager.addJob(
+                        Roborock.modelName,
+                        roborock._id,
+                        req.body.cronExpression,
+                        generateDescription(action),
+                        req.originalUrl,
+                        req.method,
+                        args
+                    );
+                    return res.sendStatus(200);
+                } else {
+                    if (_.isUndefined(isAdvancedCommand) || !isAdvancedCommand) {
+                        resultAction = await device.miioCall(action);
+                    } else {
+                        // Actions doesn't work with empty params so we need to differentiate them.
+                        if (!_.isEmpty(data)) {
+                            resultAction = await device[action](data);
+                        } else {
+                            resultAction = await device[action]();
+                        }
+                    }
 
-                return res.status(200).send(resultAction);
+                    // Express would send a warning if the result is an integer.
+                    if (Number.isInteger(resultAction)) {
+                        resultAction = resultAction.toString();
+                    }
+
+                    return res.status(200).send(resultAction);
+                }
             }
 
             return res.sendStatus(401);

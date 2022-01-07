@@ -119,11 +119,17 @@ class XiaomiService {
                 "Content-Type": "application/x-www-form-urlencoded"
             }
         });
-        this.setServiceToken(_.find(result.headers['set-cookie'], cookie => cookie.includes("serviceToken"))
-            .replace("serviceToken=", "")
-            .replace(/;.*/g, ""));
+        const setCookieHeaders = result.headers['set-cookie'];
+        const serviceTokenCookie = _.find(setCookieHeaders, cookie => cookie.includes("serviceToken"));
+        if (serviceTokenCookie !== undefined) {
+            const serviceToken = serviceTokenCookie
+                .replace("serviceToken=", "")
+                .replace(/;.*/g, "");
+            this.setServiceToken(serviceToken);
 
-        return Promise.resolve(true);
+            return Promise.resolve(true);
+        }
+        return Promise.reject();
     }
 
     /**

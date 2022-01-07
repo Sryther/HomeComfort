@@ -9,6 +9,7 @@ import CleaningApi from './cleaning';
 import LayoutsApi from './layouts';
 import NetworkApi from './network';
 import AirApi from './air';
+import SchedulesApi from './schedules';
 
 const App = express();
 const router = Router();
@@ -22,7 +23,8 @@ App.use(morgan('tiny'));
 router.use('/cleaning', CleaningApi);
 router.use('/layouts', LayoutsApi);
 router.use('/network', NetworkApi);
-router.use('/air', AirApi)
+router.use('/air', AirApi);
+router.use('/schedules', SchedulesApi);
 
 // Final path.
 App.use('/api', router);
