@@ -5,8 +5,8 @@ import Models from '../../../../lib/xiaomi/models';
 import IXiaomiDevice from '../../IXiaomiDevice';
 
 export interface IRoborock extends IXiaomiDevice {
-    name: String,
-    type: String
+    name: string,
+    type: string
 }
 
 export interface RoborockDocument extends IRoborock, Document { }

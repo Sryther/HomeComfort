@@ -1,6 +1,6 @@
 import * as express from "express";
 import {Request, Response, NextFunction} from "express";
-import {Model} from "mongoose";
+import {Model as MongooseModel} from "mongoose";
 
 interface ICRUDRouting {
     get (req: Request, res: Response, next: NextFunction): any;
@@ -10,7 +10,7 @@ interface ICRUDRouting {
     remove (req: Request, res: Response, next: NextFunction): any;
 }
 
-class CRUDRouter<M extends Model<any>> implements ICRUDRouting {
+class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
     Model: M;
 
     constructor(model: M) {
@@ -22,7 +22,8 @@ class CRUDRouter<M extends Model<any>> implements ICRUDRouting {
             const items = await this.Model.find();
             return res.status(200).send(items);
         } catch (e) {
-            return res.status(500).send(e);
+            console.error(e);
+            return res.status(500).send(e.message);
         }
     }
 
@@ -36,19 +37,19 @@ class CRUDRouter<M extends Model<any>> implements ICRUDRouting {
 
             return res.sendStatus(404);
         } catch (e) {
-            return res.status(500).send(e);
+            console.error(e);
+            return res.status(500).send(e.message);
         }
     }
 
     public async create(req: Request, res: Response, next: NextFunction): Promise<any> {
         try {
-            const item = new Model(req.body);
-
-            await item.save();
+            const item = await this.Model.create(req.body);
 
             return res.status(201).send(item);
         } catch (e) {
-            return res.status(500).send(e);
+            console.error(e);
+            return res.status(500).send(e.message);
         }
     }
 
@@ -68,13 +69,14 @@ class CRUDRouter<M extends Model<any>> implements ICRUDRouting {
                 return res.sendStatus(404);
             }
         } catch (e) {
-            return res.status(500).send(e);
+            console.error(e);
+            return res.status(500).send(e.message);
         }
     }
 
     public async remove (req: Request, res: Response, next: NextFunction): Promise<any> {
         try {
-            const item = await Model.findById(req.params.id);
+            const item = await this.Model.findById(req.params.id);
 
             if (item) {
                 await item.delete();
@@ -83,12 +85,13 @@ class CRUDRouter<M extends Model<any>> implements ICRUDRouting {
                 return res.sendStatus(404);
             }
         } catch (e) {
-            return res.status(500).send(e);
+            console.error(e);
+            return res.status(500).send(e.message);
         }
     };
 }
 
-const createRouter = (crudRouter: CRUDRouter<typeof Model>) => {
+const createRouter = (crudRouter: CRUDRouter<typeof MongooseModel>) => {
     const router = express.Router();
 
     router.get('/', crudRouter.all.bind(crudRouter));

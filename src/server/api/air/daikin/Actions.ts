@@ -1,14 +1,11 @@
 import {Request, Response, NextFunction} from "express";
 import {DaikinAC, discover as Discover} from 'daikin-controller';
-import * as CronValidator from 'cron-validator';
 
 import DaikinAirCondtioner from "../../../data/models/air/daikin/AirConditionner";
 import _ from "lodash";
 import ACParams from "./ACParams";
 import CRONManager from "../../../lib/api/CRONManager";
-import path from "path";
 import DaikinAirConditionner from "../../../data/models/air/daikin/AirConditionner";
-import {de} from "cronstrue/dist/i18n/locales/de";
 
 const options = {
     useGetToPost: true

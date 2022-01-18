@@ -10,6 +10,8 @@ import LayoutsApi from './layouts';
 import NetworkApi from './network';
 import AirApi from './air';
 import SchedulesApi from './schedules';
+import ProjectionScreenApi from './projection-screen';
+import VideoProjectorApi from './video-projector';
 
 const App = express();
 const router = Router();
@@ -25,6 +27,8 @@ router.use('/layouts', LayoutsApi);
 router.use('/network', NetworkApi);
 router.use('/air', AirApi);
 router.use('/schedules', SchedulesApi);
+router.use('/projection-screen', ProjectionScreenApi);
+router.use('/video-projector', VideoProjectorApi);
 
 // Final path.
 App.use('/api', router);

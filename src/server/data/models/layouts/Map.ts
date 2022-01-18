@@ -2,8 +2,8 @@ import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
 export interface IMap {
-    name: String,
-    svg: String,
+    name: string,
+    svg: string,
     floor: number
 }
 

@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 import { Document, Model, Schema, Types } from 'mongoose';
 
 export interface IComposition {
-    name: String,
+    name: string,
     maps: [Types.ObjectId],
 }
 

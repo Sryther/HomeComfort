@@ -46,6 +46,11 @@ export default class CRONManager {
 
     static async launchJobs() {
         const schedules = await Schedule.find();
+
+        if (schedules.length === 0) {
+            console.log("No scheduled task found.");
+        }
+
         for (const schedule of schedules) {
             const job = new Cron.CronJob(schedule.cronExpression, async () => {
                 return this.runJob(schedule);

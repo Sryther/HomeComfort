@@ -3,16 +3,16 @@ import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
 export interface IDaikinAirConditioner {
-    name: String,
-    ip4: String,
-    ip6: String
+    name: string,
+    ip4: string,
+    ip6: string
 }
 
 export interface DaikinAirConditionerDocument extends IDaikinAirConditioner, Document { }
 
-export interface DaikinAirCondtionerModel extends Model<DaikinAirConditionerDocument> { }
+export interface DaikinAirConditionerModel extends Model<DaikinAirConditionerDocument> { }
 
-const DaikinAirConditionerModel = new Schema<DaikinAirConditionerDocument, DaikinAirCondtionerModel>({
+const DaikinAirConditionerSchema = new Schema<DaikinAirConditionerDocument, DaikinAirConditionerModel>({
     name: {
         type: String,
         required: true
@@ -29,6 +29,6 @@ const DaikinAirConditionerModel = new Schema<DaikinAirConditionerDocument, Daiki
     }
 });
 
-const DaikinAirConditionner = mongoose.model('DaikinAirConditionner', DaikinAirConditionerModel);
+const DaikinAirConditionner = mongoose.model('DaikinAirConditionner', DaikinAirConditionerSchema);
 
 export default DaikinAirConditionner;

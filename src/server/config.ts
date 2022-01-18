@@ -16,6 +16,7 @@ export default {
         }
     },
     api: {
+        hostname: process.env.API_HOSTNAME !== undefined ? process.env.API_HOSTNAME : 'localhost',
         port: process.env.API_PORT !== undefined ? parseInt(process.env.API_PORT) : 3000
     }
 };

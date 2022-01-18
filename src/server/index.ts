@@ -11,7 +11,7 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
     console.log('Connected to mongodb!');
 
-    const server = Api.listen(Config.api.port, 'localhost', async () => {
+    const server = Api.listen(Config.api.port, Config.api.hostname, async () => {
         const {port, address} = server.address() as AddressInfo;
 
         console.log(`Server listening on: http://${address}:${port}`);
