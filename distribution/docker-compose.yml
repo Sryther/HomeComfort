@@ -1,0 +1,33 @@
+version: '3.1'
+services:
+  database:
+    image: mongo
+    restart: always
+    ports:
+      - mode: ingress
+        protocol: tcp
+        published: 27017
+        target: 27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: helix
+      MONGO_INITDB_ROOT_PASSWORD: example
+  server:
+    build:
+      context: ../src/server/
+      dockerfile: ./image/Dockerfile
+    restart: always
+    ports:
+      - mode: host
+        protocol: tcp
+        published: 3000
+        target: 3000
+    environment:
+      ENV: PRODUCTION
+      DATABASE_URI: database
+      DATABASE_PORT: 27017
+      DATABASE_DBNAME: helix
+      DATABASE_USER: helix
+      DATABASE_PASSWORD: example
+      DATABASE_AUTH: admin
+      API_HOSTNAME: localhost
+      API_PORT: 3000
