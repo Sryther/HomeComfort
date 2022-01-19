@@ -12,7 +12,8 @@ export default {
         credentials: {
             username: process.env.DATABASE_USER ||'user',
             password: process.env.DATABASE_PASSWORD || 'password',
-            authDatabase: process.env.DATABASE_AUTH || 'admin'
+            authDatabase: process.env.DATABASE_AUTH || 'admin',
+            authMechanism: process.env.AUTH_MECHANISME || 'MONGODB-CR'
         }
     },
     api: {

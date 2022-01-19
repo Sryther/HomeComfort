@@ -1,9 +1,10 @@
-import mongoose from "mongoose";
+import mongoose, {ConnectOptions} from "mongoose";
 import Config from "../config";
 
-const options: any = {
+const options: ConnectOptions = {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    authMechanism: Config.database.credentials.authMechanism
 };
 
 mongoose.connect(
