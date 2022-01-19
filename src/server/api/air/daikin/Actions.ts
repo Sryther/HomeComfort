@@ -1,11 +1,12 @@
 import {Request, Response, NextFunction} from "express";
 import {DaikinAC, discover as Discover} from 'daikin-controller';
 
-import DaikinAirCondtioner from "../../../data/models/air/daikin/AirConditionner";
+import DaikinAirConditioner, {
+    DaikinAirConditionerDocument
+} from "../../../data/models/air/daikin/AirConditionner";
 import _ from "lodash";
 import ACParams from "./ACParams";
 import CRONManager from "../../../lib/api/CRONManager";
-import DaikinAirConditionner from "../../../data/models/air/daikin/AirConditionner";
 
 const options = {
     useGetToPost: true
@@ -55,7 +56,7 @@ const discover = async (req: Request, res: Response, next: NextFunction) => {
 
 const getInformation = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const ac = await DaikinAirCondtioner.findById(req.params.id);
+        const ac = await DaikinAirConditioner.findById(req.params.id);
 
         if (ac) {
             try {
@@ -89,8 +90,8 @@ const getInformation = async (req: Request, res: Response, next: NextFunction) =
 
 const setValues = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const ac = await DaikinAirCondtioner.findById(req.params.id);
-        const acParams = getValuesFromBody(req);
+        const ac: DaikinAirConditionerDocument | null = await DaikinAirConditioner.findById(req.params.id);
+        const acParams: ACParams = getValuesFromBody(req);
 
         if (_.isEmpty(acParams.toObject())) {
             return res.status(400).send("No values given.");
@@ -100,7 +101,7 @@ const setValues = async (req: Request, res: Response, next: NextFunction) => {
             try {
                 if (req.body.cronExpression) {
                     await CRONManager.addJob(
-                        DaikinAirConditionner.modelName,
+                        DaikinAirConditioner.modelName,
                         ac._id,
                         req.body.cronExpression,
                         generateDescription(acParams.toObject()),
@@ -125,7 +126,7 @@ const setValues = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const setValuesRaw = async (id: string, acParams: ACParams): Promise<any> => {
-    const ac = await DaikinAirCondtioner.findById(id);
+    const ac: DaikinAirConditionerDocument | null = await DaikinAirConditioner.findById(id);
 
     if (ac) {
         const daikin = (await DaikinCreationCallbackWrapper(ac.ip4 || ac.ip6, options)).response;

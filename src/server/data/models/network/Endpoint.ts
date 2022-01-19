@@ -1,20 +1,15 @@
 import * as isIp from 'is-ip';
 import { isMACAddress } from 'is-mac-address';
-import * as mongoose from 'mongoose';
-import { Document, Model, Schema } from 'mongoose';
+import {Document, model, Schema} from 'mongoose';
 
-export interface IEndpoint {
-    name: String,
-    ip4: String,
-    ip6: String,
-    mac: String
+export interface EndpointDocument extends Document {
+    name: string,
+    ip4?: string,
+    ip6?: string,
+    mac: string
 }
 
-export interface EndpointDocument extends IEndpoint, Document { }
-
-export interface EndpointModel extends Model<EndpointDocument> { }
-
-const EndpointSchema = new Schema<EndpointDocument, EndpointModel>({
+const EndpointSchema = new Schema<EndpointDocument>({
     name: {
         type: String,
         required: true
@@ -36,6 +31,6 @@ const EndpointSchema = new Schema<EndpointDocument, EndpointModel>({
     }
 });
 
-const Endpoint = mongoose.model('Endpoint', EndpointSchema);
+const Endpoint = model<EndpointDocument>('Endpoint', EndpointSchema);
 
 export default Endpoint;

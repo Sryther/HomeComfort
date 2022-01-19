@@ -1,5 +1,5 @@
 import Cron from 'cron';
-import { ObjectId } from "mongoose";
+import {Model, ObjectId} from "mongoose";
 import cronstrue from 'cronstrue/i18n';
 import axios, { AxiosResponse, Method, AxiosRequestConfig } from "axios";
 

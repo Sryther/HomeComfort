@@ -2,7 +2,7 @@ FROM node:14-slim as tsc-builder
 WORKDIR /usr/src/app
 
 COPY . .
-RUN apt-get update || : && apt-get install python -y && \
+RUN apt-get update || : && apt-get install python build-essential -y && \
     yarn install && yarn run tsc
 
 

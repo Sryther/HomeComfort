@@ -1,19 +1,14 @@
-import * as mongoose from 'mongoose';
-import { Document, Model, Schema } from 'mongoose';
+import {Document, model, Schema} from 'mongoose';
 
 import Models from '../../../../lib/xiaomi/models';
 import IXiaomiDevice from '../../IXiaomiDevice';
 
-export interface IRoborock extends IXiaomiDevice {
+export interface RoborockDocument extends IXiaomiDevice, Document {
     name: string,
     type: string
 }
 
-export interface RoborockDocument extends IRoborock, Document { }
-
-export interface RoborockModel extends Model<RoborockDocument> { }
-
-const RoborockSchema = new Schema<RoborockDocument, RoborockModel>({
+const RoborockSchema = new Schema<RoborockDocument>({
     name: {
         type: String,
         required: true
@@ -34,6 +29,6 @@ const RoborockSchema = new Schema<RoborockDocument, RoborockModel>({
     }
 });
 
-const Roborock = mongoose.model('Roborock', RoborockSchema);
+const Roborock = model<RoborockDocument>('Roborock', RoborockSchema);
 
 export default Roborock;

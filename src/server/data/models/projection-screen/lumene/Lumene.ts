@@ -1,16 +1,11 @@
-import * as mongoose from 'mongoose';
-import { Document, Model, Schema } from 'mongoose';
+import { Document, model, Schema } from 'mongoose';
 
-export interface ILumene {
+export interface LumeneDocument extends Document {
     name: string,
     serialPortPath: string
 }
 
-export interface LumeneDocument extends ILumene, Document { }
-
-export interface LumeneModel extends Model<LumeneDocument> { }
-
-const LumeneSchema = new Schema<LumeneDocument, LumeneModel>({
+const LumeneSchema = new Schema<LumeneDocument>({
     name: {
         type: String,
         required: true
@@ -21,6 +16,6 @@ const LumeneSchema = new Schema<LumeneDocument, LumeneModel>({
     }
 });
 
-const Lumene = mongoose.model('Lumene', LumeneSchema);
+const Lumene = model<LumeneDocument>('Lumene', LumeneSchema);
 
 export default Lumene;

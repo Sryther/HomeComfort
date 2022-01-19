@@ -1,16 +1,11 @@
-import * as mongoose from 'mongoose';
-import { Document, Model, Schema, Types } from 'mongoose';
+import {Document, model, Schema, Types} from 'mongoose';
 
-export interface IComposition {
+export interface CompositionDocument extends Document {
     name: string,
     maps: [Types.ObjectId],
 }
 
-export interface CompositionDocument extends IComposition, Document { }
-
-export interface CompositionModel extends Model<CompositionDocument & Document> { }
-
-const CompositionSchema = new Schema<CompositionDocument, CompositionModel>({
+const CompositionSchema = new Schema<CompositionDocument>({
     name: {
         type: String,
         required: true
@@ -21,6 +16,6 @@ const CompositionSchema = new Schema<CompositionDocument, CompositionModel>({
     }
 });
 
-const Composition = mongoose.model('Composition', CompositionSchema);
+const Composition = model<CompositionDocument>('Composition', CompositionSchema);
 
 export default Composition;

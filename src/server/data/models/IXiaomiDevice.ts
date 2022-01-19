@@ -1,4 +1,6 @@
-export default interface IXiaomiDevice {
-    token: String,
-    ip: String
+interface IXiaomiDevice {
+    token?: string,
+    ip?: string
 }
+
+export default IXiaomiDevice;

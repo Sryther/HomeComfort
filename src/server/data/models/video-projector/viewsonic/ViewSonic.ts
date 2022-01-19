@@ -1,16 +1,11 @@
-import * as mongoose from 'mongoose';
-import { Document, Model, Schema } from 'mongoose';
+import { Document, model, Schema } from 'mongoose';
 
-export interface IViewSonic {
+export interface ViewSonicDocument extends Document {
     name: string,
     serialPortPath: string
 }
 
-export interface ViewSonicDocument extends IViewSonic, Document { }
-
-export interface ViewSonicModel extends Model<ViewSonicDocument> { }
-
-const ViewSonicModel = new Schema<ViewSonicDocument, ViewSonicModel>({
+const ViewSonicModel = new Schema<ViewSonicDocument>({
     name: {
         type: String,
         required: true
@@ -21,6 +16,6 @@ const ViewSonicModel = new Schema<ViewSonicDocument, ViewSonicModel>({
     }
 });
 
-const ViewSonic = mongoose.model('ViewSonic', ViewSonicModel);
+const ViewSonic = model<ViewSonicDocument>('ViewSonic', ViewSonicModel);
 
 export default ViewSonic;

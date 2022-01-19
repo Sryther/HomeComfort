@@ -1,23 +1,18 @@
-import * as mongoose from 'mongoose';
-import { Document, Model, Schema } from 'mongoose';
+import { Document, model, Schema } from 'mongoose';
 import * as CronValidator from "cron-validator";
 import {Method} from "axios";
 
-export interface ISchedule {
+export interface ScheduleDocument extends Document {
     cronExpression: string,
     deviceType: string,
     deviceId: string,
     description: string,
     route: string,
-    httpVerb: Method,
-    args: any
+    httpVerb?: Method,
+    args?: any
 }
 
-export interface ScheduleDocument extends ISchedule, Document { }
-
-export interface ScheduleModel extends Model<ScheduleDocument> { }
-
-const ScheduleSchema = new Schema<ScheduleDocument, ScheduleModel>({
+const ScheduleSchema = new Schema<ScheduleDocument>({
     description: {
         type: String,
         required: true
@@ -50,6 +45,6 @@ const ScheduleSchema = new Schema<ScheduleDocument, ScheduleModel>({
     }
 });
 
-const Schedule = mongoose.model('Schedule', ScheduleSchema);
+const Schedule = model<ScheduleDocument>('Schedule', ScheduleSchema);
 
 export default Schedule;

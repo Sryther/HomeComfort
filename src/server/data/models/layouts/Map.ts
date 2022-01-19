@@ -1,17 +1,12 @@
-import * as mongoose from 'mongoose';
-import { Document, Model, Schema } from 'mongoose';
+import {Document, model, Schema} from 'mongoose';
 
-export interface IMap {
+export interface MapDocument extends Document {
     name: string,
     svg: string,
     floor: number
 }
 
-export interface MapDocument extends IMap, Document { }
-
-export interface MapModel extends Model<MapDocument & Document> { }
-
-const MapSchema = new Schema<MapDocument, MapModel>({
+const MapSchema = new Schema<MapDocument>({
     name: {
         type: String,
         required: true
@@ -26,6 +21,6 @@ const MapSchema = new Schema<MapDocument, MapModel>({
     }
 });
 
-const Map = mongoose.model('Map', MapSchema);
+const Map = model<MapDocument>('Map', MapSchema);
 
 export default Map;
