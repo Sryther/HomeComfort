@@ -40,8 +40,12 @@ const sendWrite = async (projector: ViewSonicDocument, hexValue: string) => {
                 reject(error);
             });
 
-            port.write(Buffer.from(hexValue, "hex"));
-            resolve(null);
+            port.write(Buffer.from(hexValue, "hex"), (err) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(null);
+            });
         } catch(e) {
             reject(e);
         }

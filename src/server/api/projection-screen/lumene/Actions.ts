@@ -44,8 +44,12 @@ const sendWrite = async (screen: LumeneDocument, hexValue: string): Promise<any>
                 reject(error);
             });
 
-            port.write(Buffer.from(hexValue, "hex"));
-            resolve(null);
+            port.write(Buffer.from(hexValue, "hex"), (err) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(null);
+            });
         } catch(e) {
             reject(e);
         }
