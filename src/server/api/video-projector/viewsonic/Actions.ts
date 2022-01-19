@@ -1,11 +1,10 @@
 import {Request, Response, NextFunction} from "express";
 import SerialPort from "serialport";
 import ViewSonic , {ViewSonicDocument} from "../../../data/models/video-projector/viewsonic/ViewSonic";
-import Promisify from "../../../lib/Promisify";
 
-const ON_HEX_VALUE = 0x0614000400341100005D;
-const OFF_HEX_VALUE = 0x0614000400341101005E;
-const STATE_HEX_VALUE = 0x071400050034000011005E;
+const ON_HEX_VALUE = "0614000400341100005D";
+const OFF_HEX_VALUE = "0614000400341101005E";
+const STATE_HEX_VALUE = "071400050034000011005E";
 
 const on = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -33,16 +32,20 @@ const off = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const sendWrite = async (projector: ViewSonicDocument, hexValue: Number) => {
-    const port = new SerialPort(projector.serialPortPath);
-    await Promisify(port.on, "error");
-    await Promisify(port.write, hexValue);
-}
+const sendWrite = async (projector: ViewSonicDocument, hexValue: string) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const port = new SerialPort(projector.serialPortPath);
+            port.on("error", error => {
+                reject(error);
+            });
 
-const sendRead = async (projector: ViewSonicDocument, hexValue: Number) => {
-    const port = new SerialPort(projector.serialPortPath);
-    await Promisify(port.on, "error");
-    await Promisify(port.read, hexValue);
+            port.write(Buffer.from(hexValue, "hex"));
+            resolve(null);
+        } catch(e) {
+            reject(e);
+        }
+    });
 }
 
 export default { on, off };

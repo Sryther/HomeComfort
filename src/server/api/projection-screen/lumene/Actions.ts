@@ -3,10 +3,10 @@ import SerialPort from "serialport";
 import Lumene, {LumeneDocument} from "../../../data/models/projection-screen/lumene/Lumene";
 import Promisify from "../../../lib/Promisify";
 
-const UP_HEX_VALUE = 0xFFEEEEEEDD;
-const DOWN_HEX_VALUE = 0xFFEEEEEEEE;
-const STOP_HEX_VALUE = 0xFFEEEEEECC;
-const ALLOW_CONTROL_HEX_VALUE = 0xFFEEEEEEAA;
+const UP_HEX_VALUE = "FFEEEEEEDD";
+const DOWN_HEX_VALUE = "FFEEEEEEEE";
+const STOP_HEX_VALUE = "FFEEEEEECC";
+const ALLOW_CONTROL_HEX_VALUE = "FFEEEEEEAA";
 
 const up = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -36,10 +36,20 @@ const down = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const sendWrite = async (screen: LumeneDocument, hexValue: Number) => {
-    const port = new SerialPort(screen.serialPortPath);
-    await Promisify(port.on, "error");
-    await Promisify(port.write, hexValue);
+const sendWrite = async (screen: LumeneDocument, hexValue: string): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        try {
+            const port = new SerialPort(screen.serialPortPath);
+            port.on("error", error => {
+                reject(error);
+            });
+
+            port.write(Buffer.from(hexValue, "hex"));
+            resolve(null);
+        } catch(e) {
+            reject(e);
+        }
+    });
 }
 
 export default { up, down };
