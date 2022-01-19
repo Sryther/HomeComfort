@@ -14,8 +14,9 @@ const on = async (req: Request, res: Response, next: NextFunction) => {
         if (projector) {
             await sendWrite(projector, ON_HEX_VALUE);
         }
-    } catch (error) {
-        return res.status(500).send(error);
+    } catch (error: any) {
+        console.error(error);
+        return res.status(500).send(error.message);
     }
 };
 
@@ -26,8 +27,9 @@ const off = async (req: Request, res: Response, next: NextFunction) => {
         if (projector) {
             await sendWrite(projector, OFF_HEX_VALUE);
         }
-    } catch (error) {
-        return res.status(500).send(error);
+    } catch (error: any) {
+        console.error(error);
+        return res.status(500).send(error.message);
     }
 };
 

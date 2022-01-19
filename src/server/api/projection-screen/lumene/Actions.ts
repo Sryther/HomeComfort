@@ -16,8 +16,9 @@ const up = async (req: Request, res: Response, next: NextFunction) => {
             await sendWrite(screen, ALLOW_CONTROL_HEX_VALUE);
             await sendWrite(screen, UP_HEX_VALUE);
         }
-    } catch (error) {
-        return res.status(500).send(error);
+    } catch (error: any) {
+        console.error(error);
+        return res.status(500).send(error.message);
     }
 };
 
@@ -29,8 +30,9 @@ const down = async (req: Request, res: Response, next: NextFunction) => {
             await sendWrite(screen, ALLOW_CONTROL_HEX_VALUE);
             await sendWrite(screen, DOWN_HEX_VALUE);
         }
-    } catch (error) {
-        return res.status(500).send(error);
+    } catch (error: any) {
+        console.error(error);
+        return res.status(500).send(error.message);
     }
 };
 
