@@ -37,7 +37,7 @@ const write = async (pathToPort: string, value: string, encoding?: BufferEncodin
                     return reject(error.message);
                 });
             });
-        } catch(error) {
+        } catch(error: any) {
             console.error(`Generic error when writing to SerialPort ${pathToPort}.`, error);
             return reject(error.message);
         }
