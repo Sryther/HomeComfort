@@ -1,7 +1,6 @@
 import {Request, Response, NextFunction} from "express";
-import SerialPort from "serialport";
 import Lumene, {LumeneDocument} from "../../../data/models/projection-screen/lumene/Lumene";
-import Promisify from "../../../lib/Promisify";
+import Serial from "../../../lib/serial/Serial";
 
 const UP_HEX_VALUE = "FFEEEEEEDD";
 const DOWN_HEX_VALUE = "FFEEEEEEEE";
@@ -13,8 +12,8 @@ const up = async (req: Request, res: Response, next: NextFunction) => {
         const screen = await Lumene.findById(req.params.id);
 
         if (screen) {
-            await sendWrite(screen, ALLOW_CONTROL_HEX_VALUE);
-            await sendWrite(screen, UP_HEX_VALUE);
+            await Serial.write(screen.serialPortPath, ALLOW_CONTROL_HEX_VALUE);
+            await Serial.write(screen.serialPortPath, UP_HEX_VALUE);
         }
     } catch (error: any) {
         console.error(error);
@@ -27,33 +26,13 @@ const down = async (req: Request, res: Response, next: NextFunction) => {
         const screen = await Lumene.findById(req.params.id);
 
         if (screen) {
-            await sendWrite(screen, ALLOW_CONTROL_HEX_VALUE);
-            await sendWrite(screen, DOWN_HEX_VALUE);
+            await Serial.write(screen.serialPortPath, ALLOW_CONTROL_HEX_VALUE);
+            await Serial.write(screen.serialPortPath, DOWN_HEX_VALUE);
         }
     } catch (error: any) {
         console.error(error);
         return res.status(500).send(error.message);
     }
 };
-
-const sendWrite = async (screen: LumeneDocument, hexValue: string): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        try {
-            const port = new SerialPort(screen.serialPortPath);
-            port.on("error", error => {
-                reject(error);
-            });
-
-            port.write(Buffer.from(hexValue, "hex"), (err) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(null);
-            });
-        } catch(e) {
-            reject(e);
-        }
-    });
-}
 
 export default { up, down };
