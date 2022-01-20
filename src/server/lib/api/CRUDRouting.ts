@@ -1,6 +1,6 @@
 import * as express from "express";
 import {Request, Response, NextFunction} from "express";
-import {Model as MongooseModel} from "mongoose";
+import {Model as MongooseModel, Types} from "mongoose";
 
 interface ICRUDRouting {
     get (req: Request, res: Response, next: NextFunction): any;
@@ -29,6 +29,12 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
 
     public async get(req: Request, res: Response, next: NextFunction): Promise<any> {
         try {
+            try {
+                new Types.ObjectId(req.params.id);
+            } catch (error) {
+                return res.status(400).send("Not an ObjectId");
+            }
+
             const item = await this.Model.findById(req.params.id);
 
             if (item) {
@@ -55,6 +61,12 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
 
     public async update (req: Request, res: Response, next: NextFunction): Promise<any> {
         try {
+            try {
+                new Types.ObjectId(req.params.id);
+            } catch (error) {
+                return res.status(400).send("Not an ObjectId");
+            }
+
             const item = await this.Model.findById(req.params.id);
 
             if (item) {
@@ -76,6 +88,12 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
 
     public async remove (req: Request, res: Response, next: NextFunction): Promise<any> {
         try {
+            try {
+                new Types.ObjectId(req.params.id);
+            } catch (error) {
+                return res.status(400).send("Not an ObjectId");
+            }
+
             const item = await this.Model.findById(req.params.id);
 
             if (item) {

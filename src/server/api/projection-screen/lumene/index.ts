@@ -5,6 +5,7 @@ import Lumene from "../../../data/models/projection-screen/lumene/Lumene";
 const router = CRUDRouting.createRouter(new CRUDRouting.CRUDRouter<typeof Lumene>(Lumene));
 
 router.post("/:id/up", ActionsAPI.up);
-router.get("/:id/down", ActionsAPI.down);
+router.post("/:id/down", ActionsAPI.down);
+router.post("/:id/stop", ActionsAPI.stop);
 
 export default router;
