@@ -104,8 +104,6 @@ const read = async (pathToPort: string, baudRate: number, value: any, encoding?:
             });
 
             port.on('data', async (data: Buffer) => {
-                console.log(data.toString("hex"));
-
                 handleTimeoutTermination(timeout);
                 await close(port);
                 return resolve(data.toString("hex"));

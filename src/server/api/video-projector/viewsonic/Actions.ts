@@ -41,7 +41,13 @@ const state = async (req: Request, res: Response, next: NextFunction) => {
 
         if (projector) {
             const data = await Serial.read(projector.serialPortPath, 115200, STATE_HEX_VALUE);
-            return res.status(200).send(data);
+            let output = "UNKNOWN";
+            if (data === "051400030000000017") {
+                output = "OFF";
+            } else if (data === "051400030000000118") {
+                output = "ON";
+            }
+            return res.status(200).send(output);
         }
     } catch (error: any) {
         console.error(error);
