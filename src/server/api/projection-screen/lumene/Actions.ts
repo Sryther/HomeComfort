@@ -12,8 +12,8 @@ const up = async (req: Request, res: Response, next: NextFunction) => {
         const screen = await Lumene.findById(req.params.id);
 
         if (screen) {
-            await Serial.write(screen.serialPortPath, ALLOW_CONTROL_HEX_VALUE);
-            await Serial.write(screen.serialPortPath, UP_HEX_VALUE);
+            await Serial.write(screen.serialPortPath, 2400, ALLOW_CONTROL_HEX_VALUE);
+            await Serial.write(screen.serialPortPath, 2400, UP_HEX_VALUE);
 
             return res.sendStatus(200);
         }
@@ -28,8 +28,8 @@ const down = async (req: Request, res: Response, next: NextFunction) => {
         const screen = await Lumene.findById(req.params.id);
 
         if (screen) {
-            await Serial.write(screen.serialPortPath, ALLOW_CONTROL_HEX_VALUE);
-            await Serial.write(screen.serialPortPath, DOWN_HEX_VALUE);
+            await Serial.write(screen.serialPortPath, 2400, ALLOW_CONTROL_HEX_VALUE);
+            await Serial.write(screen.serialPortPath, 2400, DOWN_HEX_VALUE);
 
             return res.sendStatus(200);
         }
@@ -44,8 +44,8 @@ const stop = async (req: Request, res: Response, next: NextFunction) => {
         const screen = await Lumene.findById(req.params.id);
 
         if (screen) {
-            await Serial.write(screen.serialPortPath, ALLOW_CONTROL_HEX_VALUE);
-            await Serial.write(screen.serialPortPath, STOP_HEX_VALUE);
+            await Serial.write(screen.serialPortPath, 2400, ALLOW_CONTROL_HEX_VALUE);
+            await Serial.write(screen.serialPortPath, 2400, STOP_HEX_VALUE);
 
             return res.sendStatus(200);
         }
