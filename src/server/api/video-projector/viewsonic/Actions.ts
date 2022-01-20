@@ -11,7 +11,7 @@ const on = async (req: Request, res: Response, next: NextFunction) => {
         const projector = await ViewSonic.findById(req.params.id);
 
         if (projector) {
-            await Serial.write(projector.serialPortPath, ON_HEX_VALUE);
+            await Serial.write(projector.serialPortPath, 115200, ON_HEX_VALUE);
 
             return res.sendStatus(200);
         }
@@ -26,7 +26,7 @@ const off = async (req: Request, res: Response, next: NextFunction) => {
         const projector = await ViewSonic.findById(req.params.id);
 
         if (projector) {
-            await Serial.write(projector.serialPortPath, OFF_HEX_VALUE);
+            await Serial.write(projector.serialPortPath, 115200, OFF_HEX_VALUE);
             return res.sendStatus(200);
         }
     } catch (error: any) {
@@ -40,7 +40,7 @@ const state = async (req: Request, res: Response, next: NextFunction) => {
         const projector = await ViewSonic.findById(req.params.id);
 
         if (projector) {
-            const data = await Serial.read(projector.serialPortPath, STATE_HEX_VALUE);
+            const data = await Serial.read(projector.serialPortPath, 115200, STATE_HEX_VALUE);
             return res.status(200).send(data);
         }
     } catch (error: any) {
