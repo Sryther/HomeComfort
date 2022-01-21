@@ -3,6 +3,7 @@ import redoc from 'redoc-express';
 import ExpressSwaggerGenerator from 'express-swagger-generator';
 import * as bodyParser from 'body-parser';
 import morgan from 'morgan';
+import cors from 'cors';
 import getPackageVersion from '@jsbits/get-package-version'
 
 import CleaningApi from './cleaning';
@@ -18,6 +19,7 @@ const router = Router();
 const expressSwagger = ExpressSwaggerGenerator(App);
 
 // Middlewares.
+App.use(cors());
 App.use(bodyParser.json());
 App.use(morgan('tiny'));
 

@@ -6,10 +6,12 @@ html, body {
 html {
   display: table;
   height: 100%;
+  width: 100%;
 }
 
 body {
   width: 100%;
+  height: 100%;
 }
 
 body {
@@ -20,7 +22,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-animation: AnimationName 30s ease infinite;
   animation: AnimationName 30s ease infinite;
-  background: linear-gradient(#00C27A 0%, #53e3a6 100%);
+  background: #01c27a;
   background-size: 400% 400%;
   display: table-cell;
 }

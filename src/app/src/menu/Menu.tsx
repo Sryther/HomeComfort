@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import BurgerMenu from 'react-burger-menu';
-import MenuWrap from './MenuWrap';
 
 import "./Menu.css";
+import logo from "../small-logo.png";
 
 interface IMenuProps {}
 interface IMenuState {}
@@ -18,7 +18,7 @@ class Menu extends Component<IMenuProps, IMenuState> {
 
     render () {
         return (
-            <BurgerMenu.bubble>
+            <BurgerMenu.bubble customBurgerIcon={<img src={logo}  alt={"logo"}/>}>
                 <a id="home" className="menu-item" href="/">Accueil</a>
                 <a id="schedules" className="menu-item" href="/">Programmes</a>
                 <a id="about" className="menu-item" href="/about">About</a>
