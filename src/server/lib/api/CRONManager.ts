@@ -1,12 +1,14 @@
 import Cron from 'cron';
-import {Model, ObjectId} from "mongoose";
+import {ObjectId} from "mongoose";
 import cronstrue from 'cronstrue/i18n';
-import axios, { AxiosResponse, Method, AxiosRequestConfig } from "axios";
+import axios, { Method, AxiosRequestConfig } from "axios";
 
 import Schedule, { ScheduleDocument } from '../../data/models/schedule/Schedule';
 import Config from '../../config';
+import {SceneDocument} from "../../data/models/scene/Scene";
+import {ActionDocument} from "../../data/models/action/Action";
 
-const addSchedule = async (deviceType: string, deviceId: ObjectId, cronExpression: string, description: string, route: string, httpVerb: string, args: any): Promise<ScheduleDocument> => {
+const addSchedule = async (deviceType: string, deviceId: ObjectId | string, cronExpression: string, description: string, route: string, httpVerb: string, args: any): Promise<ScheduleDocument> => {
     const schedule = new Schedule({
         cronExpression: cronExpression,
         description: cronstrue.toString(cronExpression, {locale: "fr"}) + "\n" + description,
@@ -23,7 +25,7 @@ const addSchedule = async (deviceType: string, deviceId: ObjectId, cronExpressio
         delete schedule.action.args;
     }
 
-    console.log(`Saving schedule for device ${schedule.action.deviceId} (${schedule.action.deviceType}): ${schedule.description}.`);
+    console.log(`Saving schedule for device ${schedule.action.deviceId} (${schedule.action.deviceType}): ${schedule.action.description}.`);
 
     await schedule.save();
 
@@ -33,7 +35,7 @@ const addSchedule = async (deviceType: string, deviceId: ObjectId, cronExpressio
 const removeSchedule = async (id: string): Promise<boolean> => {
     const schedule = await Schedule.findById(id);
     if (schedule) {
-        console.log(`Deleting schedule ${schedule._id} for device ${schedule.action.deviceId} (${schedule.action.deviceType}): ${schedule.description}.`);
+        console.log(`Deleting schedule ${schedule._id} for device ${schedule.action.deviceId} (${schedule.action.deviceType}): ${schedule.action.description}.`);
         schedule.remove();
     }
     return false;
@@ -64,25 +66,42 @@ export default class CRONManager {
         }
     }
 
-    static async runJob(schedule: ScheduleDocument) {
-        console.log(`Invoking route ${schedule.action.httpVerb} ${schedule.action.route} with arguments: ${JSON.stringify(schedule.action.args)}`);
-        const requestConfig: AxiosRequestConfig = {
-            method: schedule.action.httpVerb,
-            url: schedule.action.route
-        };
+    static async runAction(action: ActionDocument) {
+        try {
+            console.log(`Invoking route ${action.httpVerb} ${action.route} with arguments: ${JSON.stringify(action.args)}`);
 
-        if (schedule.action.args) {
-            if (schedule.action.httpVerb === "get" || schedule.action.httpVerb === "GET") {
-                requestConfig.params = schedule.action.args;
-            } else {
-                requestConfig.data = schedule.action.args;
+            const verb: Method = action.httpVerb as unknown as Method;
+            const requestConfig: AxiosRequestConfig = {
+                method: verb,
+                url: action.route
+            };
+
+            if (action.args) {
+                if (action.httpVerb === "get" || action.httpVerb === "GET") {
+                    requestConfig.params = action.args;
+                } else {
+                    requestConfig.data = action.args;
+                }
             }
+            return await this.axiosInstance.request(requestConfig);
+        } catch(error: any) {
+            return Promise.reject(error);
         }
-
-        return await this.axiosInstance.request(requestConfig);
     }
 
-    static async addJob(deviceType: string, deviceId: ObjectId, cronExpression: string, description: string, route: string, httpVerb: string, args: any): Promise<string | null> {
+    static async runJob(schedule: ScheduleDocument) {
+        return await this.runAction(schedule.action);
+    }
+
+    static async runScene(scene: SceneDocument) {
+        if (scene.actions !== undefined) {
+            return Promise.all(scene.actions.map(this.runAction.bind(this)));
+        } else {
+            return Promise.resolve(null);
+        }
+    }
+
+    static async addJob(deviceType: string, deviceId: ObjectId | string, cronExpression: string, description: string, route: string, httpVerb: string, args: any): Promise<ScheduleDocument | null> {
         try {
             const schedule = await addSchedule(deviceType, deviceId, cronExpression, description, route, httpVerb, args);
 
@@ -94,7 +113,7 @@ export default class CRONManager {
 
             this.cronjobs.set(schedule._id, job);
 
-            return schedule._id;
+            return schedule;
         } catch (error) {
             console.error(`Couldn't save schedule for ${deviceType} ${deviceId} with CRON expression '${cronExpression}'`, error);
             throw error;

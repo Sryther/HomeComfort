@@ -17,7 +17,6 @@ const write = async (pathToPort: string, baudRate: number, value: any, encoding?
                 async (error) => {
                     if (error) {
                         console.error(`Error opening SerialPort ${pathToPort}.`, error);
-                        await close(port);
                         return reject(error.message);
                     }
                 }

@@ -12,7 +12,11 @@ const SceneSchema = new Schema<SceneDocument>({
         type: String,
         required: true
     },
-    actions: [ActionSchema]
+    actions: {
+        type: [ActionSchema],
+        default: [],
+        required: false
+    }
 });
 
 const Scene = model<SceneDocument>('Scene', SceneSchema);

@@ -11,8 +11,10 @@ import LayoutsApi from './layouts';
 import NetworkApi from './network';
 import AirApi from './air';
 import SchedulesApi from './schedule';
+import SceneApi from './scene';
 import ProjectionScreenApi from './projection-screen';
 import VideoProjectorApi from './video-projector';
+import schedulesAndScenesInterceptor from "../lib/api/middlewares/schedules-and-scenes";
 
 const App = express();
 const router = Router();
@@ -22,6 +24,7 @@ const expressSwagger = ExpressSwaggerGenerator(App);
 App.use(cors());
 App.use(bodyParser.json());
 App.use(morgan('tiny'));
+App.use(schedulesAndScenesInterceptor);
 
 // Sub routers.
 router.use('/cleaning', CleaningApi);
@@ -29,6 +32,7 @@ router.use('/layouts', LayoutsApi);
 router.use('/network', NetworkApi);
 router.use('/air', AirApi);
 router.use('/schedule', SchedulesApi);
+router.use('/scene', SceneApi);
 router.use('/projection-screen', ProjectionScreenApi);
 router.use('/video-projector', VideoProjectorApi);
 

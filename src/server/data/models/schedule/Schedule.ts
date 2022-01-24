@@ -4,15 +4,10 @@ import ActionSchema, {ActionDocument} from "../action/Action";
 
 export interface ScheduleDocument extends Document {
     cronExpression: string,
-    description: string,
     action: ActionDocument
 }
 
 const ScheduleSchema = new Schema<ScheduleDocument>({
-    description: {
-        type: String,
-        required: true
-    },
     cronExpression: {
         type: String,
         validate: CronValidator.isValidCron,
