@@ -37,7 +37,7 @@ const doAction = async (req: Request, res: Response, next: NextFunction) => {
             const capabilityAssociation = _.get(CapabilitiesActionAssociation, action);
 
             if (_.isEmpty(capabilityAssociation)) {
-                // Action unknown.
+                // action unknown.
                 return res.status(404).send("Unknown action");
             }
 

@@ -9,10 +9,7 @@ router.get("/devices/:deviceType/:deviceId", async (req: Request, res: Response,
     const deviceType = req.params.deviceType;
 
     try {
-        const schedules = await Schedule.find({
-            deviceType: deviceType,
-            deviceId: deviceId
-        });
+        const schedules = await Schedule.find({"action.deviceId": deviceId, "action.deviceType": deviceType });
 
         return res.status(200).send(schedules);
     } catch(error) {

@@ -8,20 +8,22 @@ import Config from '../../config';
 
 const addSchedule = async (deviceType: string, deviceId: ObjectId, cronExpression: string, description: string, route: string, httpVerb: string, args: any): Promise<ScheduleDocument> => {
     const schedule = new Schedule({
-        deviceType: deviceType,
-        deviceId: deviceId,
         cronExpression: cronExpression,
         description: cronstrue.toString(cronExpression, {locale: "fr"}) + "\n" + description,
-        route: route,
-        httpVerb: httpVerb,
-        args: args
+        action: {
+            deviceType: deviceType,
+            deviceId: deviceId,
+            route: route,
+            httpVerb: httpVerb,
+            args: args
+        }
     });
 
-    if (schedule.args === undefined || schedule.args === null) {
-        delete schedule.args;
+    if (schedule.action.args === undefined || schedule.action.args === null) {
+        delete schedule.action.args;
     }
 
-    console.log(`Saving schedule for device ${schedule.deviceId} (${schedule.deviceType}): ${schedule.description}.`);
+    console.log(`Saving schedule for device ${schedule.action.deviceId} (${schedule.action.deviceType}): ${schedule.description}.`);
 
     await schedule.save();
 
@@ -31,7 +33,7 @@ const addSchedule = async (deviceType: string, deviceId: ObjectId, cronExpressio
 const removeSchedule = async (id: string): Promise<boolean> => {
     const schedule = await Schedule.findById(id);
     if (schedule) {
-        console.log(`Deleting schedule ${schedule._id} for device ${schedule.deviceId} (${schedule.deviceType}): ${schedule.description}.`);
+        console.log(`Deleting schedule ${schedule._id} for device ${schedule.action.deviceId} (${schedule.action.deviceType}): ${schedule.description}.`);
         schedule.remove();
     }
     return false;
@@ -63,17 +65,17 @@ export default class CRONManager {
     }
 
     static async runJob(schedule: ScheduleDocument) {
-        console.log(`Invoking route ${schedule.httpVerb} ${schedule.route} with arguments: ${JSON.stringify(schedule.args)}`);
+        console.log(`Invoking route ${schedule.action.httpVerb} ${schedule.action.route} with arguments: ${JSON.stringify(schedule.action.args)}`);
         const requestConfig: AxiosRequestConfig = {
-            method: schedule.httpVerb,
-            url: schedule.route
+            method: schedule.action.httpVerb,
+            url: schedule.action.route
         };
 
-        if (schedule.args) {
-            if (schedule.httpVerb === "get" || schedule.httpVerb === "GET") {
-                requestConfig.params = schedule.args;
+        if (schedule.action.args) {
+            if (schedule.action.httpVerb === "get" || schedule.action.httpVerb === "GET") {
+                requestConfig.params = schedule.action.args;
             } else {
-                requestConfig.data = schedule.args;
+                requestConfig.data = schedule.action.args;
             }
         }
 

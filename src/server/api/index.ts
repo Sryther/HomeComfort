@@ -10,7 +10,7 @@ import CleaningApi from './cleaning';
 import LayoutsApi from './layouts';
 import NetworkApi from './network';
 import AirApi from './air';
-import SchedulesApi from './schedules';
+import SchedulesApi from './schedule';
 import ProjectionScreenApi from './projection-screen';
 import VideoProjectorApi from './video-projector';
 
@@ -28,7 +28,7 @@ router.use('/cleaning', CleaningApi);
 router.use('/layouts', LayoutsApi);
 router.use('/network', NetworkApi);
 router.use('/air', AirApi);
-router.use('/schedules', SchedulesApi);
+router.use('/schedule', SchedulesApi);
 router.use('/projection-screen', ProjectionScreenApi);
 router.use('/video-projector', VideoProjectorApi);
 

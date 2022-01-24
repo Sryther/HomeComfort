@@ -2,7 +2,6 @@ import wol from 'wol';
 import {Request, Response, NextFunction} from "express";
 
 import Endpoint from "../../../../data/models/network/Endpoint";
-import {add} from "lodash";
 
 const wake = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -17,14 +16,19 @@ const wake = async (req: Request, res: Response, next: NextFunction) => {
                 address = endpoint.ip4;
             }
 
-            const port = 7;
+            let port = 7;
+            if (endpoint.port) {
+                port = endpoint.port
+            }
+
             console.log(`Waking up endpoint with a magic packet using address ${address}, port ${port}.`);
 
             try {
                 const result = await wol.wake(endpoint.mac, {address, port});
                 return res.status(200).send(result);
-            } catch (err) {
-                return res.sendStatus(500);
+            } catch (error: any) {
+                console.error(error);
+                return res.status(500).send(error.message);
             }
         }
         return res.sendStatus(404);

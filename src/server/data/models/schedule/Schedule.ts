@@ -1,27 +1,15 @@
 import { Document, model, Schema } from 'mongoose';
 import * as CronValidator from "cron-validator";
-import {Method} from "axios";
+import ActionSchema, {ActionDocument} from "../action/Action";
 
 export interface ScheduleDocument extends Document {
     cronExpression: string,
-    deviceType: string,
-    deviceId: string,
     description: string,
-    route: string,
-    httpVerb?: Method,
-    args?: any
+    action: ActionDocument
 }
 
 const ScheduleSchema = new Schema<ScheduleDocument>({
     description: {
-        type: String,
-        required: true
-    },
-    deviceType: {
-        type: String,
-        required: true
-    },
-    deviceId: {
         type: String,
         required: true
     },
@@ -30,19 +18,7 @@ const ScheduleSchema = new Schema<ScheduleDocument>({
         validate: CronValidator.isValidCron,
         required: true
     },
-    route: {
-        type: String,
-        required: true
-    },
-    httpVerb: {
-        type: String,
-        required: false,
-        default: "POST"
-    },
-    args: {
-        type: Object,
-        required: false
-    }
+    action: ActionSchema
 });
 
 const Schedule = model<ScheduleDocument>('Schedule', ScheduleSchema);

@@ -6,6 +6,7 @@ export interface EndpointDocument extends Document {
     name: string,
     ip4?: string,
     ip6?: string,
+    port: number,
     mac: string
 }
 
@@ -22,6 +23,10 @@ const EndpointSchema = new Schema<EndpointDocument>({
     ip6: {
         type: String,
         validate: isIp.v6,
+        required: false
+    },
+    port: {
+        type: Number,
         required: false
     },
     mac: {
