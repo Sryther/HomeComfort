@@ -16,11 +16,7 @@ services:
       context: ../src/server/
       dockerfile: ./image/Dockerfile
     restart: always
-    ports:
-      - mode: host
-        protocol: tcp
-        published: 3000
-        target: 3000
+    network_mode: host
     environment:
       ENV: PRODUCTION
       DATABASE_URI: database
