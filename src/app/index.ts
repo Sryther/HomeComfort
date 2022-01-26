@@ -1,12 +1,19 @@
 import dot from 'dotenv';
 dot.config();
 
+import _ from 'lodash';
 import express from 'express';
 import path from 'path';
 import cors from 'cors';
 
 const app = express();
 const port = 3000;
+
+const { API_HOST } = process.env;
+
+if (_.isNil(API_HOST)) {
+    process.env.API_HOST = 'http://localhost:3000';
+}
 
 app.use(cors());
 

@@ -27,3 +27,14 @@ services:
       DATABASE_AUTH: admin
       API_HOSTNAME: localhost
       API_PORT: 3000
+  app:
+    build:
+      context: ../src/app
+      dockerfile: ./image/Dockerfile
+    restart: always
+    ports:
+      - mode: host
+        published: 80
+        target: 3000
+    environment:
+      API_HOST: http://127.0.0.1:3000
