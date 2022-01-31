@@ -1,6 +1,6 @@
 import {Component} from "react";
 import getClient from "../../api-client";
-import RoborockComponent from "./RoborockComponent";
+import EndpointComponent from "./EndpointComponent";
 import {Box} from "@mui/material";
 
 interface IDevicesProps {}
@@ -19,7 +19,7 @@ class CleanContainer extends Component<IDevicesProps, IDevicesState> {
 
     async componentDidMount() {
         try {
-            const { data } = await getClient().get("cleaning/roborocks/devices");
+            const { data } = await getClient().get("network/endpoints");
             this.setState({
                 devices: data
             });
@@ -31,7 +31,7 @@ class CleanContainer extends Component<IDevicesProps, IDevicesState> {
     render() {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                {this.state.devices.map((device: any) => <RoborockComponent id={device._id} name={device.name} ip={device.ip}  key={device._id} />)}
+                {this.state.devices.map((device: any) => <EndpointComponent id={device._id} name={device.name} />)}
             </Box>
         )
     }

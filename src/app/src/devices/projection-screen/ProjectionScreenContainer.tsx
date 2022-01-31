@@ -1,14 +1,14 @@
 import {Component} from "react";
 import getClient from "../../api-client";
-import RoborockComponent from "./RoborockComponent";
 import {Box} from "@mui/material";
+import ProjectionScreenComponent from "./ProjectionScreenComponent";
 
 interface IDevicesProps {}
 interface IDevicesState {
     devices: any[]
 }
 
-class CleanContainer extends Component<IDevicesProps, IDevicesState> {
+class ProjectionScreenContainer extends Component<IDevicesProps, IDevicesState> {
     state = {
         devices: []
     }
@@ -19,7 +19,7 @@ class CleanContainer extends Component<IDevicesProps, IDevicesState> {
 
     async componentDidMount() {
         try {
-            const { data } = await getClient().get("cleaning/roborocks/devices");
+            const { data } = await getClient().get("projection-screen/lumene");
             this.setState({
                 devices: data
             });
@@ -31,10 +31,10 @@ class CleanContainer extends Component<IDevicesProps, IDevicesState> {
     render() {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                {this.state.devices.map((device: any) => <RoborockComponent id={device._id} name={device.name} ip={device.ip}  key={device._id} />)}
+                {this.state.devices.map((device: any) => <ProjectionScreenComponent id={device._id} name={device.name} key={device._id} />)}
             </Box>
         )
     }
 }
 
-export default CleanContainer;
+export default ProjectionScreenContainer;

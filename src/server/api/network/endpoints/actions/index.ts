@@ -1,7 +1,9 @@
 import wol from 'wol';
+import ping from 'ping';
 import {Request, Response, NextFunction} from "express";
 
 import Endpoint from "../../../../data/models/network/Endpoint";
+import Promisify from "../../../../lib/Promisify";
 
 const wake = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -9,11 +11,11 @@ const wake = async (req: Request, res: Response, next: NextFunction) => {
 
         if (endpoint) {
             let address: String = "255.255.255.255"; // Broadcast address on a local network.
-            if (endpoint.ip6) {
-                address = endpoint.ip6;
+            if (endpoint.gateway6) {
+                address = endpoint.gateway6;
             }
-            if (endpoint.ip4) {
-                address = endpoint.ip4;
+            if (endpoint.gateway4) {
+                address = endpoint.gateway4;
             }
 
             let port = 7;
@@ -32,9 +34,33 @@ const wake = async (req: Request, res: Response, next: NextFunction) => {
             }
         }
         return res.sendStatus(404);
-    } catch (e) {
-        return res.status(500).send(e);
+    } catch (error: any) {
+        return res.status(500).send(error.message);
     }
 };
 
-export { wake };
+const isAlive = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const endpoint = await Endpoint.findById(req.params.id);
+
+        if (endpoint) {
+            let address = "";
+            if (endpoint.ip6) {
+                address = endpoint.ip6;
+            }
+            if (endpoint.ip4) {
+                address = endpoint.ip4;
+            }
+
+            const result = await ping.promise.probe(address);
+            return res.status(200).send(result.alive);
+        }
+        return res.sendStatus(404);
+    }
+    catch(error: any) {
+        console.error(error);
+        return res.status(500).send(error.message);
+    }
+}
+
+export { wake, isAlive };

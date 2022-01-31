@@ -77,7 +77,7 @@ class RoborockComponent extends Component<IRoborockComponentProps, IRoborockComp
 
     async refreshData() {
         try {
-            if (this.isRefreshDataRunning) return;
+            if (this.isRefreshDataRunning) return Promise.resolve();
             this.isRefreshDataRunning = true;
             const { data } = await getClient().get(`/cleaning/roborocks/devices/${this.props.id}/capabilities/state`);
             this.isRefreshDataRunning = false;

@@ -28,6 +28,9 @@ interface IAirComponentState {
 }
 
 class AirComponent extends Component<IAirComponentProps, IAirComponentState> {
+    refreshDataHandle?: NodeJS.Timer;
+    isRefreshDataRunning: boolean = false;
+
     constructor(props: any) {
         super(props);
     }
@@ -35,14 +38,28 @@ class AirComponent extends Component<IAirComponentProps, IAirComponentState> {
     async componentDidMount() {
         try {
             await this.refreshData();
+            this.refreshDataHandle = setInterval(this.refreshData.bind(this), 5000);
         } catch(error) {
             console.error(error);
         }
     }
 
+    componentWillUnmount() {
+        if (this.refreshDataHandle) {
+            clearTimeout(this.refreshDataHandle);
+        }
+    }
+
     async refreshData() {
-        const { data } = await getClient().get(`air/daikin/${this.props.id}/information`);
-        this.setState(data);
+        try {
+            if (this.isRefreshDataRunning) return Promise.resolve();
+            this.isRefreshDataRunning = true;
+            const { data } = await getClient().get(`air/daikin/${this.props.id}/information`);
+            this.setState(data);
+            this.isRefreshDataRunning = false;
+        } catch (e: any) {
+            // TODO
+        }
     }
 
     async power(state: boolean) {
