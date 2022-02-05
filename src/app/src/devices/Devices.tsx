@@ -16,18 +16,11 @@ class Devices extends Component<IDevicesProps, IDevicesState> {
     render () {
         return (
             <div>
-                <h3>Air</h3>
-                <AirContainer />
-                <h3>Chauffage</h3>
-                <h3>Nettoyage</h3>
-                <CleanContainer />
-                <h3>Lumière</h3>
-                <h3>Réseau</h3>
-                <EndpointContainer />
-                <h3>Ecran de projection</h3>
-                <ProjectionScreenContainer />
-                <h3>Vidéo projecteur</h3>
-                <VideoProjectorContainer />
+                <AirContainer key={"airContainer"} />
+                <CleanContainer key={"cleanContainer"} />
+                <EndpointContainer key={"endpointContainer"} />
+                <ProjectionScreenContainer key={"projectionScreenContainer"} />
+                <VideoProjectorContainer key={"videoProjectorContainer"} />
             </div>
         );
     }

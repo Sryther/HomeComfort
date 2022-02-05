@@ -8,7 +8,7 @@ interface IDevicesState {
     devices: any[]
 }
 
-class CleanContainer extends Component<IDevicesProps, IDevicesState> {
+class EndpointContainer extends Component<IDevicesProps, IDevicesState> {
     state = {
         devices: []
     }
@@ -31,10 +31,10 @@ class CleanContainer extends Component<IDevicesProps, IDevicesState> {
     render() {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                {this.state.devices.map((device: any) => <EndpointComponent id={device._id} name={device.name} />)}
+                {this.state.devices.map((device: any) => <EndpointComponent key={device._id} id={device._id} name={device.name} />)}
             </Box>
         )
     }
 }
 
-export default CleanContainer;
+export default EndpointContainer;

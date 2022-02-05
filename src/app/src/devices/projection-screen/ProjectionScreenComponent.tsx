@@ -5,21 +5,25 @@ import {
     Box,
     IconButton, Tooltip, Typography, CardContent,
 } from "@mui/material";
-import {ArrowUpward, ArrowDownward} from "@mui/icons-material";
+import {ArrowCircleDown, ArrowCircleUp} from "@mui/icons-material";
+import AbstractDevice, {IAbstractDeviceState} from "../abstract-device/AbstractDevice";
+import {GoScreenFull} from "react-icons/all";
 
 interface IProjectionScreenComponentProps {
     id: string,
     name: string
 }
 
-interface IProjectionScreenState {}
+interface IProjectionScreenState extends IAbstractDeviceState {}
 
-class ProjectionScreenComponent extends Component<IProjectionScreenComponentProps, IProjectionScreenState> {
+class ProjectionScreenComponent extends AbstractDevice<IProjectionScreenComponentProps, IProjectionScreenState> {
     constructor(props: any) {
         super(props);
     }
 
-    async componentDidMount() {}
+    async refreshData() {
+        return Promise.resolve();
+    }
 
     async up() {
         try {
@@ -39,24 +43,24 @@ class ProjectionScreenComponent extends Component<IProjectionScreenComponentProp
 
     render() {
         return (
-            <Card sx={{ display: 'flex', m: 0.5 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center' }}>
-                    <CardContent sx={{ flex: '1 0 auto' }}>
+            <Card sx={{ display: 'flex', m: 0.5, 'min-width': '30%' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
+                    <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                             <Typography component="div" variant="h5">
-                                {this.props.name}
+                                <GoScreenFull /> {this.props.name}
                             </Typography>
                         </Box>
                     </CardContent>
                     <Box>
                         <Tooltip title="Descendre">
-                            <IconButton size="small" color="secondary" aria-label="previous" onClick={() => { this.down.bind(this)() }}>
-                                <ArrowDownward />
+                            <IconButton color="primary" aria-label="down" onClick={() => { this.down.bind(this)() }}>
+                                <ArrowCircleDown />
                             </IconButton>
                         </Tooltip>
                         <Tooltip title="Monter">
-                            <IconButton size="small" color="secondary" aria-label="next" onClick={() => { this.up.bind(this)() }}>
-                                <ArrowUpward />
+                            <IconButton color="primary" aria-label="up" onClick={() => { this.up.bind(this)() }}>
+                                <ArrowCircleUp />
                             </IconButton>
                         </Tooltip>
                     </Box>

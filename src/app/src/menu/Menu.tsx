@@ -20,10 +20,9 @@ class Menu extends Component<IMenuProps, IMenuState> {
         return (
             <BurgerMenu.bubble customBurgerIcon={<img src={logo}  alt={"logo"}/>}>
                 <a id="home" className="menu-item" href="/">Accueil</a>
+                <a id="devices" className="menu-item" href="/">Tous les équipements</a>
+                <a id="scenes" className="menu-item" href="/">Scènes</a>
                 <a id="schedules" className="menu-item" href="/">Programmes</a>
-                <a id="about" className="menu-item" href="/about">About</a>
-                <a id="contact" className="menu-item" href="/contact">Contact</a>
-                <a onClick={ this.showSettings } className="menu-item--small" href="">Settings</a>
             </BurgerMenu.bubble>
         );
     }

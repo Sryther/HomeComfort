@@ -54,6 +54,18 @@ const discover = async (req: Request, res: Response, next: NextFunction) => {
     return res.send(result);
 };
 
+const findKey = (object: any, value: any) => {
+    return _.findKey(object, (item) => (item === value));
+}
+
+const formatControl = (acControl: any) => {
+    acControl.mode = findKey(DaikinAC.Mode, acControl.mode);
+    acControl.specialMode = findKey(DaikinAC.SpecialModeResponse, acControl.specialMode);
+    acControl.fanDirection = findKey(DaikinAC.FanDirection, acControl.fanDirection);
+    acControl.fanRate = findKey(DaikinAC.FanRate, acControl.fanRate);
+    return acControl;
+}
+
 const getInformation = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const ac = await DaikinAirConditioner.findById(req.params.id);
@@ -70,7 +82,7 @@ const getInformation = async (req: Request, res: Response, next: NextFunction) =
 
                 return res.status(200).send({
                     commonBasic: information.ret,
-                    acControl: acControl.ret,
+                    acControl: formatControl(acControl.ret),
                     acSensor: acSensor.ret,
                     acModel: acModel.ret,
                     acWeekPower: acWeekPower.ret,

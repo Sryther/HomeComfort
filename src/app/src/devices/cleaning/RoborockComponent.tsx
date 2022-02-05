@@ -9,9 +9,16 @@ import {
     IconButton,
     CircularProgress, Tooltip
 } from "@mui/material";
-import {PlayArrow, Stop, Pause, ElectricalServicesOutlined, CleaningServicesOutlined} from "@mui/icons-material";
+import {
+    PlayArrow,
+    Stop,
+    Pause,
+    ElectricalServicesOutlined
+} from "@mui/icons-material";
 import {Battery20, Battery30, Battery50, Battery60, Battery80, Battery90, BatteryFull} from "@mui/icons-material";
 import {BatteryCharging20, BatteryCharging30, BatteryCharging50, BatteryCharging60, BatteryCharging80, BatteryCharging90, BatteryChargingFull} from "@mui/icons-material";
+import AbstractDevice, {IAbstractDeviceState} from "../abstract-device/AbstractDevice";
+import {GiVacuumCleaner} from "react-icons/all";
 
 interface IRoborockComponentProps {
     id: string,
@@ -19,7 +26,7 @@ interface IRoborockComponentProps {
     ip: string
 }
 
-interface IRoborockComponentState {
+interface IRoborockComponentState extends IAbstractDeviceState {
     batteryLevel: number,
     charging: boolean,
     cleaning: boolean,
@@ -52,27 +59,9 @@ const iconPouleBatteriesInCharge = {
     10: <BatteryChargingFull />
 }
 
-class RoborockComponent extends Component<IRoborockComponentProps, IRoborockComponentState> {
-    refreshDataHandle?: NodeJS.Timer;
-    isRefreshDataRunning: boolean = false;
-
+class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoborockComponentState> {
     constructor(props: any) {
         super(props);
-    }
-
-    async componentDidMount() {
-        try {
-            await this.refreshData();
-            this.refreshDataHandle = setInterval(this.refreshData.bind(this), 5000);
-        } catch(error) {
-            console.error(error);
-        }
-    }
-
-    componentWillUnmount() {
-        if (this.refreshDataHandle) {
-            clearTimeout(this.refreshDataHandle);
-        }
     }
 
     async refreshData() {
@@ -167,7 +156,7 @@ class RoborockComponent extends Component<IRoborockComponentProps, IRoborockComp
             const playButton = (
                 <Tooltip title="Lancer">
                     <IconButton color="primary" aria-label="play" onClick={() => { this.clean.bind(this)()} }>
-                        <CleaningServicesOutlined sx={{height: 38, width: 38}}/>
+                        <PlayArrow sx={{height: 38, width: 38}}/>
                     </IconButton>
                 </Tooltip>
             );
@@ -190,11 +179,11 @@ class RoborockComponent extends Component<IRoborockComponentProps, IRoborockComp
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center' }}>
-                    <CardContent sx={{ flex: '1 0 auto' }}>
+            <Card sx={{ display: 'flex', m: 0.5, 'min-width': '30%' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
+                    <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
                         <Typography component="div" variant="h5">
-                            {this.props.name}
+                            <GiVacuumCleaner /> {this.props.name}
                         </Typography>
                         <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }}>
                             {batteryLevelElem}%

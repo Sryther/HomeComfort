@@ -1,5 +1,5 @@
 import './App.css';
-import {Container} from "@material-ui/core";
+import {Container} from "@mui/material";
 import Menu from "../menu/Menu";
 import React, {Component} from "react";
 
@@ -25,8 +25,8 @@ class App extends Component {
       return (
           <div className="App">
               <Menu />
-              <Container >
-                  <Devices/>
+              <Container maxWidth="lg">
+                  <Devices />
               </Container>
           </div>
       );

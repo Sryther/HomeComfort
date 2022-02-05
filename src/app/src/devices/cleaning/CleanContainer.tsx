@@ -31,7 +31,7 @@ class CleanContainer extends Component<IDevicesProps, IDevicesState> {
     render() {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                {this.state.devices.map((device: any) => <RoborockComponent id={device._id} name={device.name} ip={device.ip}  key={device._id} />)}
+                {this.state.devices.map((device: any) => <RoborockComponent key={device._id} id={device._id} name={device.name} ip={device.ip} />)}
             </Box>
         )
     }

@@ -1,4 +1,4 @@
-import {Component} from "react";
+import React from "react";
 import _ from "lodash";
 import getClient from "../../api-client";
 import {
@@ -7,9 +7,22 @@ import {
     CardContent,
     Typography,
     IconButton,
-    CircularProgress, Tooltip, Switch
+    CircularProgress, Tooltip, Switch, Menu, MenuItem
 } from "@mui/material";
-import {Thermostat, Home, Remove, Stop, PlayArrow, Add} from "@mui/icons-material";
+import {
+    Thermostat,
+    Home,
+    Remove,
+    Add,
+    MoreVert,
+    LocalFireDepartment,
+    Air,
+    AcUnit,
+    Autorenew, Stream
+} from "@mui/icons-material";
+import { FaLeaf } from "react-icons/fa";
+import { ImPower } from "react-icons/im";
+import AbstractDevice, {IAbstractDeviceState} from "../abstract-device/AbstractDevice";
 
 interface IAirComponentProps {
     id: string,
@@ -18,7 +31,7 @@ interface IAirComponentProps {
     ip6?: string
 }
 
-interface IAirComponentState {
+interface IAirComponentState extends IAbstractDeviceState {
     acControl?: any,
     acSensor?: any,
     acModel?: any,
@@ -27,27 +40,9 @@ interface IAirComponentState {
     commonBasic?: any
 }
 
-class AirComponent extends Component<IAirComponentProps, IAirComponentState> {
-    refreshDataHandle?: NodeJS.Timer;
-    isRefreshDataRunning: boolean = false;
-
+class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState> {
     constructor(props: any) {
         super(props);
-    }
-
-    async componentDidMount() {
-        try {
-            await this.refreshData();
-            this.refreshDataHandle = setInterval(this.refreshData.bind(this), 5000);
-        } catch(error) {
-            console.error(error);
-        }
-    }
-
-    componentWillUnmount() {
-        if (this.refreshDataHandle) {
-            clearTimeout(this.refreshDataHandle);
-        }
     }
 
     async refreshData() {
@@ -85,66 +80,137 @@ class AirComponent extends Component<IAirComponentProps, IAirComponentState> {
     }
 
     render() {
-        const powerOff = (
-            <Tooltip title="Eteindre">
-                <IconButton color="primary" aria-label="pause" onClick={() => { this.power.bind(this)(false) }}>
-                    <Stop sx={{height: 38, width: 38}}/>
-                </IconButton>
-            </Tooltip>
-        );
-        const powerOn = (
-            <Tooltip title="Allumer">
-                <IconButton color="primary" aria-label="play" onClick={() => { this.power.bind(this)(true)} }>
-                    <PlayArrow sx={{height: 38, width: 38}}/>
-                </IconButton>
-            </Tooltip>
-        );
-
         let togglePower = <div />;
         let controls = <div />;
-        if (!_.isNil(this.state)) {
+        let mode = <div />;
+        let specialMode = <div />;
+        if (!_.isNil(this.state) && !_.isNil(this.state.acControl)) {
             togglePower = (
-                <Switch sx={{ marginLeft: "auto" }} onClick={() => this.power.bind(this)(!this.state.acControl.power)} defaultChecked={this.state.acControl.power} />
+                <Switch sx={{ marginLeft: "auto" }} color="secondary" onClick={() => this.power.bind(this)(!this.state.acControl.power)} defaultChecked={this.state.acControl.power} />
             );
 
             controls = (
                 <Box>
                     <Tooltip title="Diminuer la température désirée">
-                        <IconButton size="small" color="secondary" aria-label="previous" onClick={() => { this.changeTemp.bind(this)(-0.5) }}>
+                        <IconButton color="primary" aria-label="previous" onClick={() => { this.changeTemp.bind(this)(-0.5) }}>
                             <Remove />
                         </IconButton>
                     </Tooltip>
                     <Tooltip title="Augmenter la température désirée">
-                        <IconButton size="small" color="secondary" aria-label="next" onClick={() => { this.changeTemp.bind(this)(0.5) }}>
+                        <IconButton color="primary" aria-label="next" onClick={() => { this.changeTemp.bind(this)(0.5) }}>
                             <Add />
                         </IconButton>
                     </Tooltip>
                 </Box>
             );
+
+            let modeVerbose = "";
+            let modeIcon = <div />;
+            switch (this.state.acControl.mode) {
+                case "HOT":
+                    modeIcon = <LocalFireDepartment sx={{"color": "orange"}} />
+                    modeVerbose = "Chauffe";
+                    break;
+                case "COLD":
+                    modeIcon = <AcUnit sx={{"color": "lightblue"}} />
+                    modeVerbose = "Climatise";
+                    break;
+                case "AUTO":
+                case "AUTO1":
+                case "AUTO2":
+                    modeIcon = <Autorenew />
+                    modeVerbose = "Automatique";
+                    break;
+                case "DEHUMDID":
+                    modeIcon = <LocalFireDepartment />
+                    modeVerbose = "Déshumidifacation";
+                    break;
+                case "FAN":
+                    modeIcon = <Air />
+                    modeVerbose = "Ventilation";
+                    break;
+            }
+            mode = (
+                <Tooltip title={modeVerbose}>
+                    {modeIcon}
+                </Tooltip>
+            );
+
+            let specialModeVerbose = "";
+            let specialModeIcon = <div />;
+            switch (this.state.acControl.specialMode) {
+                case "STREAMER":
+                    specialModeIcon = <Stream sx={{"color": "lightblue"}} />
+                    specialModeVerbose = "Purification";
+                    break;
+                case "POWERFUL":
+                    specialModeIcon = <ImPower style={{"color": "red"}} />
+                    specialModeVerbose = "Puissant";
+                    break;
+                case "ECONO":
+                    specialModeIcon = <FaLeaf style={{"color": "green "}}/>
+                    specialModeVerbose = "Economique";
+                    break;
+            }
+            specialMode = (
+                <Tooltip title={specialModeVerbose}>
+                    {specialModeIcon}
+                </Tooltip>
+            );
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center' }}>
-                    <CardContent sx={{ flex: '1 0 auto' }}>
+            <Card sx={{ display: 'flex', m: 0.5, 'min-width': '30%' }}>
+                <Menu
+                    anchorEl={document.querySelector("#air-component-" + this.props.id)}
+                    open={!_.isNil(this.state) && this.state.isMenuOpen}
+                    onClose={this.closeMenu}
+                    MenuListProps={{
+                        'aria-labelledby': 'basic-button',
+                    }}
+                >
+                    <MenuItem onClick={this.closeMenu}>Profile</MenuItem>
+                    <MenuItem onClick={this.closeMenu}>My account</MenuItem>
+                    <MenuItem onClick={this.closeMenu}>Logout</MenuItem>
+                </Menu>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
+                    <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                             <Typography component="div" variant="h5">
-                                {this.props.name}
+                                <Air /> {this.props.name}
                             </Typography>
                             {togglePower}
+                            <IconButton
+                                size="small"
+                                id={"air-component-" + this.props.id}
+                                onClick={() => { this.openMenu.bind(this) }}
+                                aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
+                                aria-haspopup="true"
+                                aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
+                            >
+                                <MoreVert />
+                            </IconButton>
                         </Box>
                         <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }}>
-                            <Box sx={{ display: 'flex', m: 0.5 }}>
-                                <Thermostat />
-                                {!_.isNil(this.state) ?
-                                    this.state.acControl.targetTemperature : <CircularProgress size={16} color="inherit" />
-                                } °C
-                            </Box>
-                            <Box sx={{ display: 'flex', m: 0.5 }}>
-                                <Home />
-                                {!_.isNil(this.state) ?
-                                    this.state.acSensor.indoorTemperature : <CircularProgress size={12} color="inherit" />
-                                } °C
+                            <Tooltip title={"Température demandée"}>
+                                <Box sx={{ display: 'flex', m: 0.5 }}>
+                                    <Thermostat />
+                                    {!_.isNil(this.state) && !_.isNil(this.state.acControl) ?
+                                        this.state.acControl.targetTemperature : <CircularProgress size={16} color="inherit" />
+                                    } °C
+                                </Box>
+                            </Tooltip>
+                            <Tooltip title={"Température intérieure"}>
+                                <Box sx={{ display: 'flex', m: 0.5 }}>
+                                    <Home />
+                                    {!_.isNil(this.state) && !_.isNil(this.state.acControl) ?
+                                        this.state.acSensor.indoorTemperature : <CircularProgress size={12} color="inherit" />
+                                    } °C
+                                </Box>
+                            </Tooltip>
+                            <Box sx={{ display: 'flex', m: 0.5, marginLeft: "auto" }}>
+                                {mode}
+                                {specialMode}
                             </Box>
                         </Typography>
                     </CardContent>
