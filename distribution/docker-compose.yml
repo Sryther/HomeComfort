@@ -12,9 +12,7 @@ services:
 #      MONGO_INITDB_ROOT_USERNAME: helix
 #      MONGO_INITDB_ROOT_PASSWORD: example
   server:
-    build:
-      context: ../src/server/
-      dockerfile: ./image/Dockerfile
+    image: sryther/helix
     restart: always
     network_mode: host
     environment:
@@ -28,9 +26,7 @@ services:
       API_HOSTNAME: localhost
       API_PORT: 3000
   app:
-    build:
-      context: ../src/app
-      dockerfile: ./image/Dockerfile
+    image: sryther/helix-app
     restart: always
     ports:
       - mode: host

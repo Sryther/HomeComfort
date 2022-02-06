@@ -12,7 +12,7 @@ const port = 3000;
 const { API_HOST } = process.env;
 
 if (_.isNil(API_HOST)) {
-    process.env.API_HOST = 'http://localhost:3000';
+    process.env.API_HOST = `${document.location.origin}:3000`;
 }
 
 app.use(cors());

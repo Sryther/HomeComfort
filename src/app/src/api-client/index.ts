@@ -6,7 +6,7 @@ const { API_HOST } = process.env;
 const getClient = () => {
     let host = API_HOST;
     if (_.isNil(host)) {
-        host = "http://localhost:3000";
+        host = `${document.location.origin}:3000`;
     }
     return axios.create({
        baseURL: `${host}/api/`
