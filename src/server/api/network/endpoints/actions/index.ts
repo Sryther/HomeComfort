@@ -3,7 +3,6 @@ import ping from 'ping';
 import {Request, Response, NextFunction} from "express";
 
 import Endpoint from "../../../../data/models/network/Endpoint";
-import Promisify from "../../../../lib/Promisify";
 
 const wake = async (req: Request, res: Response, next: NextFunction) => {
     try {

@@ -31,7 +31,7 @@ class CleanContainer extends Component<IDevicesProps, IDevicesState> {
     render() {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                {this.state.devices.map((device: any) => <VideoProjectorComponent id={device._id} name={device.name}  key={device._id} />)}
+                {this.state.devices.map((device: any) => <VideoProjectorComponent id={device._id} name={device.name} path={device.serialPortPath} key={device._id} />)}
             </Box>
         )
     }

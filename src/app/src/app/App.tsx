@@ -25,7 +25,7 @@ class App extends Component {
       return (
           <div className="App">
               <Menu />
-              <Container maxWidth="lg">
+              <Container maxWidth="md">
                   <Devices />
               </Container>
           </div>

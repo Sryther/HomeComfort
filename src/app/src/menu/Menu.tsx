@@ -18,7 +18,7 @@ class Menu extends Component<IMenuProps, IMenuState> {
 
     render () {
         return (
-            <BurgerMenu.bubble customBurgerIcon={<img src={logo}  alt={"logo"}/>}>
+            <BurgerMenu.bubble customBurgerIcon={<img className={"logo"} src={logo}  alt={"logo"}/>}>
                 <a id="home" className="menu-item" href="/">Accueil</a>
                 <a id="devices" className="menu-item" href="/">Tous les équipements</a>
                 <a id="scenes" className="menu-item" href="/">Scènes</a>

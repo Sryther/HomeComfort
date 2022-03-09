@@ -7,9 +7,12 @@
  * @property {Number} fanRate Integer or "A"/"B", you can also use DaikinAC-FanRate for allowed values in human readable format
  * @property {Number} fanDirection Integer, you can also use DaikinAC-FanDirection for allowed values in human readable format
  */
+
 export default class ACParams {
     private _power: Boolean|null = null;
-    private _mode: Number|null = null;
+    private _mode: Number|String|null = null;
+    private _specialMode: Number|String|null = null;
+    private _specialModeActive: Boolean|Number|null = null;
     private _targetTemperature: Number|String|null = null;
     private _targetHumidity: Number|String|null = null;
     private _fanRate: Number|null = null;
@@ -21,6 +24,8 @@ export default class ACParams {
         const returnValue: any = {
             power: this.power,
             mode: this.mode,
+            specialMode: this.specialMode,
+            specialModeActive: this.specialModeActive,
             targetTemperature: this.targetTemperature,
             targetHumidity: this.targetHumidity,
             fanRate: this.fanRate,
@@ -51,6 +56,22 @@ export default class ACParams {
 
     set mode(value) {
         this._mode = value;
+    }
+
+    get specialMode() {
+        return this._specialMode;
+    }
+
+    set specialMode(value) {
+        this._specialMode = value;
+    }
+
+    get specialModeActive() {
+        return this._specialModeActive;
+    }
+
+    set specialModeActive(value) {
+        this._specialModeActive = value;
     }
 
     get targetTemperature() {

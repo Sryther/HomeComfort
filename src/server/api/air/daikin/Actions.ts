@@ -1,9 +1,7 @@
-import {Request, Response, NextFunction} from "express";
+import {NextFunction, Request, Response} from "express";
 import {DaikinAC, discover as Discover} from 'daikin-controller';
 
-import DaikinAirConditioner, {
-    DaikinAirConditionerDocument
-} from "../../../data/models/air/daikin/AirConditionner";
+import DaikinAirConditioner, {DaikinAirConditionerDocument} from "../../../data/models/air/daikin/AirConditionner";
 import _ from "lodash";
 import ACParams from "./ACParams";
 import CRONManager from "../../../lib/api/CRONManager";
@@ -58,11 +56,24 @@ const findKey = (object: any, value: any) => {
     return _.findKey(object, (item) => (item === value));
 }
 
+const findValue = (object: any, key: any) => {
+    return object[key];
+}
+
 const formatControl = (acControl: any) => {
     acControl.mode = findKey(DaikinAC.Mode, acControl.mode);
     acControl.specialMode = findKey(DaikinAC.SpecialModeResponse, acControl.specialMode);
     acControl.fanDirection = findKey(DaikinAC.FanDirection, acControl.fanDirection);
     acControl.fanRate = findKey(DaikinAC.FanRate, acControl.fanRate);
+    return acControl;
+}
+
+const formatControlToSend = (acControl: ACParams) => {
+    acControl.mode = findValue(DaikinAC.Mode, acControl.mode);
+    acControl.specialMode = findValue(DaikinAC.SpecialModeKind, acControl.specialMode);
+    acControl.specialModeActive = !!acControl.specialModeActive;
+    acControl.fanDirection = findValue(DaikinAC.FanDirection, acControl.fanDirection);
+    acControl.fanRate = findValue(DaikinAC.FanRate, acControl.fanRate);
     return acControl;
 }
 
@@ -103,8 +114,7 @@ const getInformation = async (req: Request, res: Response, next: NextFunction) =
 const setValues = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const ac: DaikinAirConditionerDocument | null = await DaikinAirConditioner.findById(req.params.id);
-        const acParams: ACParams = getValuesFromBody(req);
-
+        const acParams: ACParams = formatControlToSend(getValuesFromBody(req));
         if (_.isEmpty(acParams.toObject())) {
             return res.status(400).send("No values given.");
         }
@@ -122,9 +132,15 @@ const setValues = async (req: Request, res: Response, next: NextFunction) => {
                         acParams.toObject()
                     );
                 } else {
-                    await setValuesRaw(req.params.id, acParams);
+                    let result;
+                    if (!_.isNil(acParams.specialMode)) {
+                        result = await setSpecialMode(req.params.id, acParams.specialMode, acParams.specialModeActive);
+                    } else {
+                        result = await setValuesRaw(req.params.id, acParams);
+                    }
+                    return res.status(200).send(result);
                 }
-                return res.sendStatus(200);
+                return res.sendStatus(202);
             } catch (error) {
                 console.error(`Couldn't set values to Daikin AC ${ac.name} (${ac.ip4 || ac.ip6})`, error);
                 return res.sendStatus(500);
@@ -142,8 +158,26 @@ const setValuesRaw = async (id: string, acParams: ACParams): Promise<any> => {
 
     if (ac) {
         const daikin = (await DaikinCreationCallbackWrapper(ac.ip4 || ac.ip6, options)).response;
-        console.log(`Sending data to Daikin AC ${ac.name} (${ac.ip4 || ac.ip6}): ${JSON.stringify(acParams)}`);
-        await DaikinCallbackWrapper(daikin, daikin.setACControlInfo, acParams.toObject());
+        console.log(`Sending data to Daikin AC ${ac.name} (${ac.ip4 || ac.ip6}): ${JSON.stringify(acParams.toObject())}`);
+        return await DaikinCallbackWrapper(daikin, daikin.setACControlInfo, acParams.toObject());
+    }
+}
+
+const setSpecialMode = async (id: String, specialMode: any, state: any): Promise<any> => {
+    const ac: DaikinAirConditionerDocument | null = await DaikinAirConditioner.findById(id);
+
+    if (ac) {
+        const daikin = (await DaikinCreationCallbackWrapper(ac.ip4 || ac.ip6, options)).response;
+        console.log(`Sending special mode to Daikin AC ${ac.name} (${ac.ip4 || ac.ip6}): ${specialMode}`);
+        const args = {
+            state: state ? 1 : 0,
+            kind: parseInt(specialMode)
+        };
+        const result = await DaikinCallbackWrapper(daikin, daikin.setACSpecialMode, args);
+
+        await DaikinCallbackWrapper(daikin, daikin.setUpdate, 1000, () => {}); // See https://github.com/Apollon77/daikin-controller/issues/120
+
+        return result;
     }
 }
 
@@ -151,6 +185,7 @@ const getValuesFromBody = (req: Request) => {
     const acParams: ACParams = new ACParams();
     acParams.power = req.body.power;
     acParams.mode = req.body.mode;
+    acParams.specialMode = req.body.specialMode;
     acParams.targetTemperature = req.body.targetTemperature;
     acParams.targetHumidity = req.body.targetHumidity;
     acParams.fanRate = req.body.fanRate;
@@ -199,20 +234,24 @@ const humanizePower = (power: Boolean | null): string => {
     return "éteint";
 }
 
-const humanizeMode = (mode: Number | null): string => {
-    if (mode === 1) {
+const humanizeMode = (mode: Number | String | null): string => {
+    if (_.isNull(mode)) {
+        return "";
+    }
+    const intMode = parseInt(mode.toString());
+    if (intMode === 1) {
         return "1";
     }
-    if (mode === 2) {
+    if (intMode === 2) {
         return "2";
     }
-    if (mode === 3) {
+    if (intMode === 3) {
         return "3";
     }
-    if (mode === 4) {
+    if (intMode === 4) {
         return "4";
     }
-    return mode + "";
+    return intMode + "";
 }
 
 export default { setValues, discover, getInformation, setValuesRaw };

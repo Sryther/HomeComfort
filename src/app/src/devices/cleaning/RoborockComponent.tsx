@@ -1,4 +1,4 @@
-import {Component} from "react";
+import React, {Component} from "react";
 import _ from "lodash";
 import getClient from "../../api-client";
 import {
@@ -7,13 +7,13 @@ import {
     CardContent,
     Typography,
     IconButton,
-    CircularProgress, Tooltip
+    CircularProgress, Tooltip, Icon
 } from "@mui/material";
 import {
     PlayArrow,
     Stop,
     Pause,
-    ElectricalServicesOutlined
+    ElectricalServicesOutlined, MoreVert, Lightbulb
 } from "@mui/icons-material";
 import {Battery20, Battery30, Battery50, Battery60, Battery80, Battery90, BatteryFull} from "@mui/icons-material";
 import {BatteryCharging20, BatteryCharging30, BatteryCharging50, BatteryCharging60, BatteryCharging80, BatteryCharging90, BatteryChargingFull} from "@mui/icons-material";
@@ -126,6 +126,9 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
     render() {
         let batteryLevelElem = <CircularProgress size={16} color="inherit" />;
         let mainControlButtons = <div />;
+        let endpointState = <CircularProgress size={16} color="inherit" />;
+        let bgColor = "white";
+
         if (!_.isNil(this.state)) {
             const iconBatteryPouleIReallyWant: any = this.state.charging ? iconPouleBatteriesInCharge : iconPouleBatteries;
             batteryLevelElem = (<Box sx={{ display: 'flex' }}>
@@ -162,6 +165,7 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
             );
 
             if (this.state.cleaning) {
+                bgColor = "#49fdba";
                 mainControlButtons = (
                     <Box>
                         {pauseButton}
@@ -169,24 +173,50 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
                         {chargeButton}
                     </Box>
                 );
+                endpointState = (
+                    <Tooltip title="Allumé">
+                        <Icon>
+                            <PlayArrow sx={{color: "green" }} />
+                        </Icon>
+                    </Tooltip>
+                );
             } else {
+                bgColor = "white";
                 mainControlButtons = (
                     <Box>
                         {playButton}
                     </Box>
                 );
+                endpointState = <div />;
             }
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'min-width': '30%' }}>
+            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
                     <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
-                        <Typography component="div" variant="h5">
-                            <GiVacuumCleaner /> {this.props.name}
-                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                            <Typography component="div" variant="h5">
+                                <GiVacuumCleaner /> {this.props.name}
+                            </Typography>
+                            <Box sx={{ marginLeft: "auto" }}>
+                                <IconButton
+                                    size="small"
+                                    id={"endpoint-component-" + this.props.id}
+                                    onClick={() => { this.openMenu.bind(this) }}
+                                    aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
+                                    aria-haspopup="true"
+                                    aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
+                                >
+                                    <MoreVert />
+                                </IconButton>
+                            </Box>
+                        </Box>
                         <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }}>
                             {batteryLevelElem}%
+                            <Box sx={{ display: 'flex', m: 0.5, marginLeft: "auto" }}>
+                                {endpointState}
+                            </Box>
                         </Typography>
                     </CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>

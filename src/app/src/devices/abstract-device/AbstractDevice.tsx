@@ -1,19 +1,22 @@
 import React from "react";
 
 export interface IAbstractDeviceState {
-    isMenuOpen: boolean
+    isMenuOpen: boolean,
+    isLoading: boolean
 }
 
 abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> extends React.Component<IProps, IState> {
     menuAnchorEl: any;
     refreshDataHandle?: NodeJS.Timer;
     isRefreshDataRunning: boolean = false;
+    state: any = {
+        isMenuOpen: false,
+        isLoading: false
+    };
 
     protected constructor(props: any) {
         super(props);
         this.menuAnchorEl = null;
-
-        this.setState({ isMenuOpen: false });
     }
 
     async componentDidMount() {

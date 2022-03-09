@@ -7,7 +7,7 @@ import {
     CardContent,
     Typography,
     IconButton,
-    CircularProgress, Tooltip, Switch, Menu, MenuItem
+    CircularProgress, Tooltip, Switch, Menu, MenuItem, Divider
 } from "@mui/material";
 import {
     Thermostat,
@@ -79,6 +79,96 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
         }
     }
 
+    async setMode(mode: string) {
+        try {
+            await getClient().post(`air/daikin/${this.props.id}/set-values`, {
+                mode: mode
+            });
+            await this.refreshData();
+        } catch(error) {
+            console.error(error);
+        }
+    }
+
+    async resetActualSpecialMode() {
+        try {
+            if (!_.isNil(this.state.acControl.specialMode)) {
+                for (const specialMode of this.state.acControl.specialMode.split("/")) {
+                    await getClient().post(`air/daikin/${this.props.id}/set-values`, {
+                        specialMode: specialMode,
+                        specialModeActive: false
+                    });
+                }
+            }
+        } catch(error) {
+            console.error(error);
+        }
+    }
+
+    async setSpecialMode(specialMode: string) {
+        try {
+            await getClient().post(`air/daikin/${this.props.id}/set-values`, {
+                specialMode: specialMode,
+                specialModeActive: true
+            });
+            await this.refreshData();
+        } catch(error) {
+            console.error(error);
+        }
+    }
+
+    getPossibleActions(): Array<any> | null {
+        if (_.isNil(this.state) || _.isNil(this.state.acControl)) {
+            return null;
+        }
+
+        const listItemsMode: any = {
+            "HOT": (<MenuItem key={"HOT"} onClick={async () => await this.setMode.bind(this)("HOT")}>Mode chauffage</MenuItem>),
+            "COLD": (<MenuItem key={"COLD"} onClick={async () => await this.setMode.bind(this)("COLD")}>Mode climisation</MenuItem>),
+            "FAN": (<MenuItem key={"FAN"} onClick={async () => await this.setMode.bind(this)("FAN")}>Mode ventilation</MenuItem>),
+            "AUTO": (<MenuItem key={"AUTO"} onClick={async () => await this.setMode.bind(this)("AUTO")}>Mode automatique</MenuItem>),
+            "DEHUMDID": (<MenuItem key={"DEHUMDID"} onClick={async () => await this.setMode.bind(this)("DEHUMDID")}>Mode déshumidification</MenuItem>)
+        };
+        const listItemsSpecialMode: any = {
+            "STREAMER": (<MenuItem key={"STREAMER"} onClick={async () => {
+                await this.resetActualSpecialMode.bind(this)();
+                await this.setSpecialMode.bind(this)("STREAMER");
+            }}>Mode supp. purification</MenuItem>),
+            "POWERFUL": (<MenuItem key={"POWERFUL"} onClick={async () => {
+                await this.resetActualSpecialMode.bind(this)();
+                await this.setSpecialMode.bind(this)("POWERFUL");
+            }}>Mode supp. puissant</MenuItem>),
+            "ECONO": (<MenuItem key={"ECONO"} onClick={async () => {
+                await this.resetActualSpecialMode.bind(this)();
+                await this.setSpecialMode.bind(this)("ECONO");
+            }}>Mode supp. économique</MenuItem>)
+        };
+        const listItemsSuperSpecialMode: any = {
+            "POWERFUL/STREAMER": (<MenuItem key={"POWERFUL/STREAMER"} onClick={async () => {
+                await this.resetActualSpecialMode.bind(this)();
+                await this.setSpecialMode.bind(this)("POWERFUL");
+                await this.setSpecialMode.bind(this)("STREAMER");
+            }}>Mode supp. puissant et purification</MenuItem>),
+            "ECONO/STREAMER": (<MenuItem key={"ECONO/STREAMER"} onClick={async () => {
+                await this.resetActualSpecialMode.bind(this)();
+                await this.setSpecialMode.bind(this)("ECONO");
+                await this.setSpecialMode.bind(this)("STREAMER");
+            }}>Mode supp. économique et purification</MenuItem>)
+        }
+
+        delete listItemsMode[this.state.acControl.mode];
+        delete listItemsSpecialMode[this.state.acControl.specialMode];
+        delete listItemsSuperSpecialMode[this.state.acControl.specialMode];
+
+        const menu = Object.values(listItemsMode);
+        menu.push(<Divider key={"divideStandardWithSpecial"} />);
+        Object.values(listItemsSpecialMode).forEach(item => menu.push(item));
+        menu.push(<Divider key={"divideStandardWithSuperSpecial"} />);
+        Object.values(listItemsSuperSpecialMode).forEach(item => menu.push(item));
+
+        return menu;
+    }
+
     render() {
         let togglePower = <div />;
         let controls = <div />;
@@ -147,6 +237,24 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                     specialModeIcon = <ImPower style={{"color": "red"}} />
                     specialModeVerbose = "Puissant";
                     break;
+                case "POWERFUL/STREAMER":
+                    specialModeIcon = (
+                        <Box>
+                            <ImPower style={{"color": "red"}} />
+                            <Stream sx={{"color": "lightblue"}} />
+                        </Box>
+                    )
+                    specialModeVerbose = "Puissant/Purification";
+                    break;
+                case "ECONO/STREAMER":
+                    specialModeIcon = (
+                        <Box>
+                            <FaLeaf style={{"color": "green "}}/>
+                            <Stream sx={{"color": "lightblue"}} />
+                        </Box>
+                    )
+                    specialModeVerbose = "Economique/Purification";
+                    break;
                 case "ECONO":
                     specialModeIcon = <FaLeaf style={{"color": "green "}}/>
                     specialModeVerbose = "Economique";
@@ -160,18 +268,16 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'min-width': '30%' }}>
+            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }}>
                 <Menu
-                    anchorEl={document.querySelector("#air-component-" + this.props.id)}
+                    anchorEl={this.menuAnchorEl}
                     open={!_.isNil(this.state) && this.state.isMenuOpen}
-                    onClose={this.closeMenu}
+                    onClose={this.closeMenu.bind(this)}
                     MenuListProps={{
                         'aria-labelledby': 'basic-button',
                     }}
                 >
-                    <MenuItem onClick={this.closeMenu}>Profile</MenuItem>
-                    <MenuItem onClick={this.closeMenu}>My account</MenuItem>
-                    <MenuItem onClick={this.closeMenu}>Logout</MenuItem>
+                    {this.getPossibleActions()}
                 </Menu>
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
                     <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
@@ -179,17 +285,19 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                             <Typography component="div" variant="h5">
                                 <Air /> {this.props.name}
                             </Typography>
-                            {togglePower}
-                            <IconButton
-                                size="small"
-                                id={"air-component-" + this.props.id}
-                                onClick={() => { this.openMenu.bind(this) }}
-                                aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
-                                aria-haspopup="true"
-                                aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
-                            >
-                                <MoreVert />
-                            </IconButton>
+                            <Box sx={{ marginLeft: "auto" }}>
+                                {togglePower}
+                                <IconButton
+                                    size="small"
+                                    id={"air-component-" + this.props.id}
+                                    onClick={(event) => { this.openMenu.bind(this)(event) }}
+                                    aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
+                                    aria-haspopup="true"
+                                    aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
+                                >
+                                    <MoreVert />
+                                </IconButton>
+                            </Box>
                         </Box>
                         <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }}>
                             <Tooltip title={"Température demandée"}>
