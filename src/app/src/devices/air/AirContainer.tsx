@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import AirComponent from "./AirComponent";
 import getClient from "../../api-client";
-import {Box} from "@mui/material";
+import {Box, Stack} from "@mui/material";
 
 interface IDevicesProps {}
 interface IDevicesState {
@@ -26,9 +26,9 @@ class AirContainer extends Component<IDevicesProps, IDevicesState> {
 
     render() {
         return (
-            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+            <Stack direction="row">
                 {this.state.devices.map((device: any) => <AirComponent key={device._id} id={device._id} name={device.name} ip4={device.ip4} ip6={device.ip6} />)}
-            </Box>
+            </Stack>
         )
     }
 }

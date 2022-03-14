@@ -1,5 +1,6 @@
 import React from "react";
 import _ from "lodash";
+import moment from "moment";
 import getClient from "../../api-client";
 import {
     Card,
@@ -7,7 +8,16 @@ import {
     CardContent,
     Typography,
     IconButton,
-    CircularProgress, Tooltip, Switch, MenuItem, Divider
+    CircularProgress,
+    Tooltip,
+    Switch,
+    MenuItem,
+    Divider,
+    Popover,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText, Modal, Stack
 } from "@mui/material";
 import {
     Thermostat,
@@ -18,11 +28,28 @@ import {
     LocalFireDepartment,
     Air,
     AcUnit,
-    Autorenew, Stream
+    Autorenew, Stream, BarChart
 } from "@mui/icons-material";
 import { FaLeaf } from "react-icons/fa";
 import { ImPower } from "react-icons/im";
 import AbstractDevice, {IAbstractDeviceState} from "../abstract-device/AbstractDevice";
+import {IoWaterOutline, WiHumidity} from "react-icons/all";
+import {AxisOptions, Chart} from "react-charts";
+
+type Consumption = {
+    date: string,
+    consumption: number
+}
+
+type Series<T> = {
+    label: string,
+    data: T[]
+}
+
+type Stats = {
+    daily: Series<Consumption>[],
+    monthly: Series<Consumption>[]
+}
 
 interface IAirComponentProps {
     id: string,
@@ -37,10 +64,30 @@ interface IAirComponentState extends IAbstractDeviceState {
     acModel?: any,
     acWeekPower?: any,
     acYearPower?: any,
-    commonBasic?: any
+    commonBasic?: any,
+    additionalInformationAnchorEl?: any,
+    isAdditionalInformationOpen: boolean,
+    isStatsOpen: boolean,
+    statsData: Stats
 }
 
+moment.locale('fr');
+
 class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState> {
+    constructor(props: any) {
+        super(props);
+
+        this.state = Object.assign(this.state, {
+            additionalInformationAnchorEl: null,
+            isAdditionalInformationOpen: false,
+            isStatsOpen: false,
+            statsData: {
+                daily: [],
+                monthly: []
+            }
+        });
+    }
+
     async getDeviceInformation(): Promise<any> {
         try {
             return await getClient().get(`/air/daikin/${this.props.id}`);
@@ -137,37 +184,67 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
         }
 
         const listItemsMode: Map<string, JSX.Element> = new Map<string, JSX.Element>([
-            ["HOT", (<MenuItem key={"HOT"} onClick={async () => await this.setMode.bind(this)("HOT")}>Mode chauffage</MenuItem>)],
-            ["COLD", (<MenuItem key={"COLD"} onClick={async () => await this.setMode.bind(this)("COLD")}>Mode climisation</MenuItem>)],
-            ["FAN", (<MenuItem key={"FAN"} onClick={async () => await this.setMode.bind(this)("FAN")}>Mode ventilation</MenuItem>)],
-            ["AUTO", (<MenuItem key={"AUTO"} onClick={async () => await this.setMode.bind(this)("AUTO")}>Mode automatique</MenuItem>)],
-            ["DEHUMDID", (<MenuItem key={"DEHUMDID"} onClick={async () => await this.setMode.bind(this)("DEHUMDID")}>Mode déshumidification</MenuItem>)]
+            ["HOT", (<MenuItem key={"HOT"} onClick={async () => await this.setMode.bind(this)("HOT")}>
+                <ListItemIcon><LocalFireDepartment sx={{"color": "orange"}} /></ListItemIcon>
+                <ListItemText>Mode chauffage</ListItemText>
+            </MenuItem>)],
+            ["COLD", (<MenuItem key={"COLD"} onClick={async () => await this.setMode.bind(this)("COLD")}>
+                <ListItemIcon><AcUnit sx={{"color": "lightblue"}} /></ListItemIcon>
+                <ListItemText>Mode climisation</ListItemText>
+            </MenuItem>)],
+            ["FAN", (<MenuItem key={"FAN"} onClick={async () => await this.setMode.bind(this)("FAN")}>
+                <ListItemIcon><Air /></ListItemIcon>
+                <ListItemText>Mode ventilation</ListItemText>
+            </MenuItem>)],
+            ["AUTO", (<MenuItem key={"AUTO"} onClick={async () => await this.setMode.bind(this)("AUTO")}>
+                <ListItemIcon><Autorenew /></ListItemIcon>
+                <ListItemText>Mode automatique</ListItemText>
+            </MenuItem>)],
+            ["DEHUMDID", (<MenuItem key={"DEHUMDID"} onClick={async () => await this.setMode.bind(this)("DEHUMDID")}>
+                <ListItemIcon><IoWaterOutline style={{ fontSize: "24px" }} /></ListItemIcon>
+                <ListItemText>Mode déshumidification</ListItemText>
+            </MenuItem>)]
         ]);
         const listItemsSpecialMode: Map<string, JSX.Element> = new Map<string, JSX.Element>([
             ["STREAMER", (<MenuItem key={"STREAMER"} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("STREAMER");
-            }}>Mode supp. purification</MenuItem>)],
+            }}>
+                <ListItemIcon><Stream sx={{"color": "lightblue"}} /></ListItemIcon>
+                <ListItemText>Mode purification</ListItemText>
+            </MenuItem>)],
             ["POWERFUL", (<MenuItem key={"POWERFUL"} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("POWERFUL");
-            }}>Mode supp. puissant</MenuItem>)],
+            }}>
+                <ListItemIcon><ImPower style={{"color": "red", fontSize: "24px"}} /></ListItemIcon>
+                <ListItemText>Mode puissant</ListItemText>
+            </MenuItem>)],
             ["ECONO", (<MenuItem key={"ECONO"} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("ECONO");
-            }}>Mode supp. économique</MenuItem>)]
+            }}>
+                <ListItemIcon><FaLeaf style={{"color": "green", fontSize: "24px"}}/></ListItemIcon>
+                <ListItemText>Mode économique</ListItemText>
+            </MenuItem>)]
         ]);
         const listItemsSuperSpecialMode: Map<string, JSX.Element> = new Map<string, JSX.Element>([
             ["POWERFUL/STREAMER", (<MenuItem key={"POWERFUL/STREAMER"} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("POWERFUL");
                 await this.setSpecialMode.bind(this)("STREAMER");
-            }}>Mode supp. puissant et purification</MenuItem>)],
+            }}>
+                <ListItemIcon><ImPower style={{"color": "red"}} /><Stream sx={{"color": "lightblue"}} /></ListItemIcon>
+                <ListItemText>Mode puissant et purification</ListItemText>
+            </MenuItem>)],
             ["ECONO/STREAMER", (<MenuItem key={"ECONO/STREAMER"} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("ECONO");
                 await this.setSpecialMode.bind(this)("STREAMER");
-            }}>Mode supp. économique et purification</MenuItem>)]
+            }}>
+                <ListItemIcon><FaLeaf style={{"color": "green "}}/><Stream sx={{"color": "lightblue"}} /></ListItemIcon>
+                <ListItemText>Mode économique et purification</ListItemText>
+            </MenuItem>)]
     ])
 
         listItemsMode.delete(this.state.acControl.mode);
@@ -179,12 +256,146 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
         for (const itemSpecial of Array.from(listItemsSpecialMode.values())) {
             menu.push(itemSpecial);
         }
-        menu.push(<Divider key={"divideStandardWithSuperSpecial"} />);
+        menu.push(<Divider key={"divideSpecialWithSuperSpecial"} />);
         for (const itemSuperSpecial of Array.from(listItemsSuperSpecialMode.values())) {
             menu.push(itemSuperSpecial);
         }
 
+        menu.push(<Divider key={"divideSuperSpecialWithStats"} />);
+        menu.push(<MenuItem key={`air-getstats-${this.props.id}`} onClick={() => this.displayStats.bind(this)()}>
+            <ListItemIcon><BarChart /></ListItemIcon>
+            <ListItemText>Voir les statistiques</ListItemText>
+        </MenuItem>);
+
         return menu;
+    }
+
+    displayStats() {
+        this.setState({
+            isBackdropOpen: true
+        });
+        this.closeMenu();
+
+        const dailyData: Series<Consumption>[] = [{
+            label: 'Utilisation journalière cumulée (heures)',
+            data: []
+        }];
+        const monthlyData: Series<Consumption>[] = [{
+            label: 'Consommation mensuelle (kWh)',
+            data: []
+        }];
+
+        if (!_.isNil(this.state.acWeekPower)) {
+            dailyData[0].data.push({
+                consumption: Math.round(this.state.acWeekPower.todayRuntime) / 60,
+                date: "Aujourd'hui"
+            });
+
+            for (let i = 0; i < this.state.acWeekPower.data.length; i++) {
+                const data = this.state.acWeekPower.data[i];
+                dailyData[0].data.push({
+                    consumption: Math.round(data / 60),
+                    date: moment().subtract(i + 1, 'day').format("dddd")
+                })
+            }
+        }
+
+        if (!_.isNil(this.state.acYearPower)) {
+            for (let i = 0; i < this.state.acYearPower.previousYear.length; i++) {
+                const data = this.state.acYearPower.previousYear[i];
+                monthlyData[0].data.push({
+                    consumption: data / 10,
+                    date: moment().set('month', i).format("MMMM") + " " + moment().format("YYYY")
+                });
+            }
+            for (let i = 0; i < this.state.acYearPower.currentYear.length; i++) {
+                const data = this.state.acYearPower.currentYear[i];
+                monthlyData[0].data.push({
+                    consumption: data / 10,
+                    date: moment().set('month', i).format("MMMM") + " " + moment().subtract(1, 'year').format("YYYY")
+                });
+            }
+        }
+
+        this.setState({
+            isStatsOpen: true,
+            statsData: {
+                daily: dailyData,
+                monthly: monthlyData
+            },
+            isBackdropOpen: false
+        });
+    }
+
+    renderStats() {
+        const primaryAxis: AxisOptions<Consumption> = {
+            getValue: datum => datum.date,
+        };
+
+        const secondaryAxes: AxisOptions<Consumption>[] = [{
+            getValue: datum => datum.consumption,
+        }];
+
+        if (!_.isNil(this.state.statsData)) {
+            const dailyStats = this.state.statsData.daily;
+            const monthlyStats = this.state.statsData.monthly;
+
+            return (
+                <Box sx={{
+                    position: 'absolute' as 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '80%',
+                    height: '80%',
+                    bgcolor: 'background.paper',
+                    borderRadius: '5px',
+                    boxShadow: 24,
+                    p: 4,
+                }}>
+                    <Stack style={{"width": "100%", "height": "100%"}}>
+                        <div style={{"width": "100%", "height": "50%"}}>
+                            {this.state.isStatsOpen && <Chart
+                                id={`daily-stats-${this.props.id}`}
+                                key={`daily-stats-${this.props.id}`}
+                                options={{
+                                    data: dailyStats,
+                                    primaryAxis,
+                                    secondaryAxes,
+                                }}
+                            />}
+                        </div>
+                        <div style={{"width": "100%", "height": "50%"}}>
+                            {this.state.isStatsOpen && <Chart
+                                id={`monthly-stats-${this.props.id}`}
+                                key={`monthly-stats-${this.props.id}`}
+                                options={{
+                                    data: monthlyStats,
+                                    primaryAxis,
+                                    secondaryAxes,
+                                }}
+                            />}
+                        </div>
+                    </Stack>
+                </Box>
+            );
+        }
+        return (<div />);
+    }
+
+    onStatsClose() {
+        this.setState({ isStatsOpen: false });
+    }
+
+    openAdditionalInformationPopover(event: React.MouseEvent) {
+        this.setState({
+            isAdditionalInformationOpen: true,
+            additionalInformationAnchorEl: event.target
+        });
+    }
+
+    handleAdditionalInformationPopoverClose() {
+        this.setState({ isAdditionalInformationOpen: false });
     }
 
     render() {
@@ -230,7 +441,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                     modeVerbose = "Automatique";
                     break;
                 case "DEHUMDID":
-                    modeIcon = <LocalFireDepartment />
+                    modeIcon = <IoWaterOutline style={{ fontSize: "24px" }} />
                     modeVerbose = "Déshumidifacation";
                     break;
                 case "FAN":
@@ -252,13 +463,13 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                     specialModeVerbose = "Purification";
                     break;
                 case "POWERFUL":
-                    specialModeIcon = <ImPower style={{"color": "red"}} />
+                    specialModeIcon = <ImPower style={{"color": "red", fontSize: "24px" }} />
                     specialModeVerbose = "Puissant";
                     break;
                 case "POWERFUL/STREAMER":
                     specialModeIcon = (
                         <Box>
-                            <ImPower style={{"color": "red"}} />
+                            <ImPower style={{"color": "red", fontSize: "24px" }} />
                             <Stream sx={{"color": "lightblue"}} />
                         </Box>
                     )
@@ -267,14 +478,14 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                 case "ECONO/STREAMER":
                     specialModeIcon = (
                         <Box>
-                            <FaLeaf style={{"color": "green "}}/>
+                            <FaLeaf style={{"color": "green", fontSize: "24px"}}/>
                             <Stream sx={{"color": "lightblue"}} />
                         </Box>
                     )
                     specialModeVerbose = "Economique/Purification";
                     break;
                 case "ECONO":
-                    specialModeIcon = <FaLeaf style={{"color": "green "}}/>
+                    specialModeIcon = <FaLeaf style={{"color": "green", fontSize: "24px"}}/>
                     specialModeVerbose = "Economique";
                     break;
             }
@@ -289,6 +500,13 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
             <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }}>
                 {this.renderMenu(this.getPossibleActions())}
                 {this.renderInformationModal()}
+                {this.renderBackdrop()}
+                <Modal
+                    open={this.state.isStatsOpen}
+                    onClose={this.onStatsClose.bind(this)}
+                >
+                    {this.renderStats.bind(this)()}
+                </Modal>
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
                     <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
@@ -309,7 +527,39 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                                 </IconButton>
                             </Box>
                         </Box>
-                        <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }}>
+                        <Popover
+                            open={this.state.isAdditionalInformationOpen}
+                            anchorEl={this.state.additionalInformationAnchorEl}
+                            onClose={this.handleAdditionalInformationPopoverClose.bind(this)}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'left',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'left',
+                            }}
+                        >
+                            <List sx={{ p: 2 }}>
+                                <ListItem>
+                                    <ListItemIcon>
+                                        <Thermostat />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        {!_.isNil(this.state) && !_.isNil(this.state.acSensor) ? this.state.acSensor.outdoorTemperature : <CircularProgress size={16} color="inherit" />} °C à l'extérieur
+                                    </ListItemText>
+                                </ListItem>
+                                <ListItem>
+                                    <ListItemIcon>
+                                        <WiHumidity style={{ fontSize: "26px" }} />
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        {!_.isNil(this.state) && !_.isNil(this.state.acSensor) ? this.state.acSensor.indoorHumidity : <CircularProgress size={16} color="inherit" />}%
+                                    </ListItemText>
+                                </ListItem>
+                            </List>
+                        </Popover>
+                        <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }} onClick={(event: React.MouseEvent) => this.openAdditionalInformationPopover.bind(this)(event)}>
                             <Tooltip title={"Température demandée"}>
                                 <Box sx={{ display: 'flex', m: 0.5 }}>
                                     <Thermostat />

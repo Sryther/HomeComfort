@@ -1,12 +1,25 @@
 import React from "react";
-import {Box, Button, Divider, Menu, MenuItem, Modal, TextField} from "@mui/material";
+import {
+    Backdrop,
+    Box,
+    Button,
+    CircularProgress,
+    Divider, ListItemIcon,
+    ListItemText,
+    Menu,
+    MenuItem,
+    Modal,
+    TextField
+} from "@mui/material";
 import * as uuid from "uuid";
 import _ from "lodash";
+import {Edit} from "@mui/icons-material";
 
 export interface IAbstractDeviceState {
     isMenuOpen: boolean,
     isLoading: boolean,
     isDeviceInformationModalOpen: boolean,
+    isBackdropOpen: boolean,
     deviceInformation: string
 }
 
@@ -21,6 +34,7 @@ abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> exten
         isMenuOpen: false,
         isLoading: false,
         isDeviceInformationModalOpen: false,
+        isBackdropOpen: false,
         deviceInformation: ""
     };
 
@@ -29,7 +43,8 @@ abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> exten
         this.menuAnchorEl = null;
         this.updateDeviceInformationItem = (
             <MenuItem key={uuid.v4()} onClick={async () => this.openDeviceInformationModal.bind(this)()}>
-                Editer l'équipement
+                <ListItemIcon><Edit /></ListItemIcon>
+                <ListItemText>Editer l'équipement</ListItemText>
             </MenuItem>
         );
     }
@@ -62,12 +77,22 @@ abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> exten
 
     async openDeviceInformationModal(): Promise<void> {
         this.closeMenu();
+        this.openBackdrop();
         await this.prepareDeviceInformationModal();
         this.setState({ isDeviceInformationModalOpen: true });
+        this.closeBackdrop();
     }
 
     handleDeviceInformationCloseModal(): void {
         this.setState({ isDeviceInformationModalOpen: false });
+    }
+
+    openBackdrop(): void {
+        this.setState({ isBackdropOpen: true });
+    }
+
+    closeBackdrop(): void {
+        this.setState({ isBackdropOpen: false });
     }
 
     renderMenu(items: Array<JSX.Element> = []): JSX.Element {
@@ -87,13 +112,24 @@ abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> exten
         );
     }
 
+    renderBackdrop(): JSX.Element {
+        return (
+            <Backdrop
+                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={this.state.isBackdropOpen}
+            >
+                <CircularProgress color="inherit" />
+            </Backdrop>
+        )
+    }
+
     renderInformationModal(): JSX.Element {
-        let newValue: any = this.state.deviceInformation;
+        let deviceInformationNewValue: any = this.state.deviceInformation;
         const handleTextInputChange = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>): void => {
             try {
-                newValue = JSON.parse(event.target.value);
+                deviceInformationNewValue = JSON.parse(event.target.value);
             } catch (error: any) {
-                newValue = JSON.parse(this.state.deviceInformation);
+                deviceInformationNewValue = JSON.parse(this.state.deviceInformation);
             }
         };
 
@@ -109,8 +145,8 @@ abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> exten
                     transform: 'translate(-50%, -50%)',
                     width: 400,
                     bgcolor: 'background.paper',
-                    border: '2px solid #000',
                     boxShadow: 24,
+                    borderRadius: '5px',
                     p: 4,
                 }}>
                     <TextField
@@ -123,7 +159,7 @@ abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> exten
                         defaultValue={this.state.deviceInformation}
                     />
                     <Button onClick={async () => {
-                        await this.updateDeviceInformation.bind(this)(newValue);
+                        await this.updateDeviceInformation.bind(this)(deviceInformationNewValue);
                         this.handleDeviceInformationCloseModal.bind(this)();
                     }}>
                         Sauver

@@ -1,7 +1,7 @@
 import {Component} from "react";
 import getClient from "../../api-client";
 import RoborockComponent from "./RoborockComponent";
-import {Box} from "@mui/material";
+import {Box, Stack} from "@mui/material";
 
 interface IDevicesProps {}
 interface IDevicesState {
@@ -26,9 +26,9 @@ class CleanContainer extends Component<IDevicesProps, IDevicesState> {
 
     render() {
         return (
-            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+            <Stack direction="row">
                 {this.state.devices.map((device: any) => <RoborockComponent key={device._id} id={device._id} name={device.name} ip={device.ip} />)}
-            </Box>
+            </Stack>
         )
     }
 }

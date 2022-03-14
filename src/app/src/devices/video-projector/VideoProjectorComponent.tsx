@@ -142,6 +142,7 @@ class VideoProjectorComponent extends AbstractDevice<IEndpointComponentProps, IE
             <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
+                {this.renderBackdrop()}
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
                     <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
