@@ -9,10 +9,6 @@ interface IDevicesProps {}
 interface IDevicesState {}
 
 class Devices extends Component<IDevicesProps, IDevicesState> {
-    constructor(props: any) {
-        super(props);
-    }
-
     render () {
         return (
             <div>

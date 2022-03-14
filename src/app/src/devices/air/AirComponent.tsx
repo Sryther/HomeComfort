@@ -7,7 +7,7 @@ import {
     CardContent,
     Typography,
     IconButton,
-    CircularProgress, Tooltip, Switch, Menu, MenuItem, Divider
+    CircularProgress, Tooltip, Switch, MenuItem, Divider
 } from "@mui/material";
 import {
     Thermostat,
@@ -41,15 +41,29 @@ interface IAirComponentState extends IAbstractDeviceState {
 }
 
 class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState> {
-    constructor(props: any) {
-        super(props);
+    async getDeviceInformation(): Promise<any> {
+        try {
+            return await getClient().get(`/air/daikin/${this.props.id}`);
+        } catch (error: any) {
+            console.error(error);
+            return null;
+        }
+    }
+
+    async updateDeviceInformation(data: any): Promise<any> {
+        try {
+            return await getClient().put(`/air/daikin/${this.props.id}`, data);
+        } catch (error: any) {
+            console.error(error);
+            return null;
+        }
     }
 
     async refreshData() {
         try {
             if (this.isRefreshDataRunning) return Promise.resolve();
             this.isRefreshDataRunning = true;
-            const { data } = await getClient().get(`air/daikin/${this.props.id}/information`);
+            const { data } = await getClient().get(`/air/daikin/${this.props.id}/information`);
             this.setState(data);
             this.isRefreshDataRunning = false;
         } catch (e: any) {
@@ -59,7 +73,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
 
     async power(state: boolean) {
         try {
-            await getClient().post(`air/daikin/${this.props.id}/set-values`, {
+            await getClient().post(`/air/daikin/${this.props.id}/set-values`, {
                 power: state
             });
             await this.refreshData();
@@ -70,7 +84,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
 
     async changeTemp(inc: number) {
         try {
-            await getClient().post(`air/daikin/${this.props.id}/set-values`, {
+            await getClient().post(`/air/daikin/${this.props.id}/set-values`, {
                 targetTemperature: this.state.acControl.targetTemperature + inc
             });
             await this.refreshData();
@@ -81,7 +95,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
 
     async setMode(mode: string) {
         try {
-            await getClient().post(`air/daikin/${this.props.id}/set-values`, {
+            await getClient().post(`/air/daikin/${this.props.id}/set-values`, {
                 mode: mode
             });
             await this.refreshData();
@@ -117,54 +131,58 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
         }
     }
 
-    getPossibleActions(): Array<any> | null {
+    getPossibleActions(): Array<JSX.Element>{
         if (_.isNil(this.state) || _.isNil(this.state.acControl)) {
-            return null;
+            return [];
         }
 
-        const listItemsMode: any = {
-            "HOT": (<MenuItem key={"HOT"} onClick={async () => await this.setMode.bind(this)("HOT")}>Mode chauffage</MenuItem>),
-            "COLD": (<MenuItem key={"COLD"} onClick={async () => await this.setMode.bind(this)("COLD")}>Mode climisation</MenuItem>),
-            "FAN": (<MenuItem key={"FAN"} onClick={async () => await this.setMode.bind(this)("FAN")}>Mode ventilation</MenuItem>),
-            "AUTO": (<MenuItem key={"AUTO"} onClick={async () => await this.setMode.bind(this)("AUTO")}>Mode automatique</MenuItem>),
-            "DEHUMDID": (<MenuItem key={"DEHUMDID"} onClick={async () => await this.setMode.bind(this)("DEHUMDID")}>Mode déshumidification</MenuItem>)
-        };
-        const listItemsSpecialMode: any = {
-            "STREAMER": (<MenuItem key={"STREAMER"} onClick={async () => {
+        const listItemsMode: Map<string, JSX.Element> = new Map<string, JSX.Element>([
+            ["HOT", (<MenuItem key={"HOT"} onClick={async () => await this.setMode.bind(this)("HOT")}>Mode chauffage</MenuItem>)],
+            ["COLD", (<MenuItem key={"COLD"} onClick={async () => await this.setMode.bind(this)("COLD")}>Mode climisation</MenuItem>)],
+            ["FAN", (<MenuItem key={"FAN"} onClick={async () => await this.setMode.bind(this)("FAN")}>Mode ventilation</MenuItem>)],
+            ["AUTO", (<MenuItem key={"AUTO"} onClick={async () => await this.setMode.bind(this)("AUTO")}>Mode automatique</MenuItem>)],
+            ["DEHUMDID", (<MenuItem key={"DEHUMDID"} onClick={async () => await this.setMode.bind(this)("DEHUMDID")}>Mode déshumidification</MenuItem>)]
+        ]);
+        const listItemsSpecialMode: Map<string, JSX.Element> = new Map<string, JSX.Element>([
+            ["STREAMER", (<MenuItem key={"STREAMER"} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("STREAMER");
-            }}>Mode supp. purification</MenuItem>),
-            "POWERFUL": (<MenuItem key={"POWERFUL"} onClick={async () => {
+            }}>Mode supp. purification</MenuItem>)],
+            ["POWERFUL", (<MenuItem key={"POWERFUL"} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("POWERFUL");
-            }}>Mode supp. puissant</MenuItem>),
-            "ECONO": (<MenuItem key={"ECONO"} onClick={async () => {
+            }}>Mode supp. puissant</MenuItem>)],
+            ["ECONO", (<MenuItem key={"ECONO"} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("ECONO");
-            }}>Mode supp. économique</MenuItem>)
-        };
-        const listItemsSuperSpecialMode: any = {
-            "POWERFUL/STREAMER": (<MenuItem key={"POWERFUL/STREAMER"} onClick={async () => {
+            }}>Mode supp. économique</MenuItem>)]
+        ]);
+        const listItemsSuperSpecialMode: Map<string, JSX.Element> = new Map<string, JSX.Element>([
+            ["POWERFUL/STREAMER", (<MenuItem key={"POWERFUL/STREAMER"} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("POWERFUL");
                 await this.setSpecialMode.bind(this)("STREAMER");
-            }}>Mode supp. puissant et purification</MenuItem>),
-            "ECONO/STREAMER": (<MenuItem key={"ECONO/STREAMER"} onClick={async () => {
+            }}>Mode supp. puissant et purification</MenuItem>)],
+            ["ECONO/STREAMER", (<MenuItem key={"ECONO/STREAMER"} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("ECONO");
                 await this.setSpecialMode.bind(this)("STREAMER");
-            }}>Mode supp. économique et purification</MenuItem>)
-        }
+            }}>Mode supp. économique et purification</MenuItem>)]
+    ])
 
-        delete listItemsMode[this.state.acControl.mode];
-        delete listItemsSpecialMode[this.state.acControl.specialMode];
-        delete listItemsSuperSpecialMode[this.state.acControl.specialMode];
+        listItemsMode.delete(this.state.acControl.mode);
+        listItemsSpecialMode.delete(this.state.acControl.specialMode);
+        listItemsSuperSpecialMode.delete(this.state.acControl.specialMode);
 
-        const menu = Object.values(listItemsMode);
+        const menu: Array<JSX.Element> = Array.from(listItemsMode.values());
         menu.push(<Divider key={"divideStandardWithSpecial"} />);
-        Object.values(listItemsSpecialMode).forEach(item => menu.push(item));
+        for (const itemSpecial of Array.from(listItemsSpecialMode.values())) {
+            menu.push(itemSpecial);
+        }
         menu.push(<Divider key={"divideStandardWithSuperSpecial"} />);
-        Object.values(listItemsSuperSpecialMode).forEach(item => menu.push(item));
+        for (const itemSuperSpecial of Array.from(listItemsSuperSpecialMode.values())) {
+            menu.push(itemSuperSpecial);
+        }
 
         return menu;
     }
@@ -269,16 +287,8 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
 
         return (
             <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }}>
-                <Menu
-                    anchorEl={this.menuAnchorEl}
-                    open={!_.isNil(this.state) && this.state.isMenuOpen}
-                    onClose={this.closeMenu.bind(this)}
-                    MenuListProps={{
-                        'aria-labelledby': 'basic-button',
-                    }}
-                >
-                    {this.getPossibleActions()}
-                </Menu>
+                {this.renderMenu(this.getPossibleActions())}
+                {this.renderInformationModal()}
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
                     <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>

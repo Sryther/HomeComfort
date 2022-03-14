@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React from "react";
 import _ from "lodash";
 import getClient from "../../api-client";
 import {
@@ -13,7 +13,7 @@ import {
     PlayArrow,
     Stop,
     Pause,
-    ElectricalServicesOutlined, MoreVert, Lightbulb
+    ElectricalServicesOutlined, MoreVert
 } from "@mui/icons-material";
 import {Battery20, Battery30, Battery50, Battery60, Battery80, Battery90, BatteryFull} from "@mui/icons-material";
 import {BatteryCharging20, BatteryCharging30, BatteryCharging50, BatteryCharging60, BatteryCharging80, BatteryCharging90, BatteryChargingFull} from "@mui/icons-material";
@@ -60,8 +60,22 @@ const iconPouleBatteriesInCharge = {
 }
 
 class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoborockComponentState> {
-    constructor(props: any) {
-        super(props);
+    async getDeviceInformation(): Promise<any> {
+        try {
+            return await getClient().get(`/cleaning/roborocks/devices/${this.props.id}`);
+        } catch (error: any) {
+            console.error(error);
+            return null;
+        }
+    }
+
+    async updateDeviceInformation(data: any): Promise<any> {
+        try {
+            return await getClient().put(`/cleaning/roborocks/devices/${this.props.id}`, data);
+        } catch (error: any) {
+            console.error(error);
+            return null;
+        }
     }
 
     async refreshData() {
@@ -193,7 +207,10 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
 
         return (
             <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
+                {this.renderMenu()}
+                {this.renderInformationModal()}
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
+                    {this.renderInformationModal()}
                     <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                             <Typography component="div" variant="h5">
@@ -202,8 +219,8 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
                             <Box sx={{ marginLeft: "auto" }}>
                                 <IconButton
                                     size="small"
-                                    id={"endpoint-component-" + this.props.id}
-                                    onClick={() => { this.openMenu.bind(this) }}
+                                    id={"roborock-component-" + this.props.id}
+                                    onClick={(event) => { this.openMenu.bind(this)(event) }}
                                     aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
                                     aria-haspopup="true"
                                     aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}

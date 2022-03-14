@@ -12,7 +12,7 @@ WORKDIR /usr/src/app
 COPY --from=tsc-builder /usr/src/app/dist ./build
 COPY --from=tsc-builder ["/usr/src/app/package.json", "/usr/src/app/yarn.lock", "./"]
 
-RUN apt update || : && apt install python build-essential -y && \
+RUN apt update || : && apt install python build-essential inetutils-ping -y && \
     rm -rf /var/cache/apk/* && \
     yarn install --prod && \
     apt remove python build-essential -y

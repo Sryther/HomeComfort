@@ -13,13 +13,9 @@ class ProjectionScreenContainer extends Component<IDevicesProps, IDevicesState> 
         devices: []
     }
 
-    constructor(props: any) {
-        super(props);
-    }
-
     async componentDidMount() {
         try {
-            const { data } = await getClient().get("projection-screen/lumene");
+            const { data } = await getClient().get("/projection-screen/lumene");
             this.setState({
                 devices: data
             });

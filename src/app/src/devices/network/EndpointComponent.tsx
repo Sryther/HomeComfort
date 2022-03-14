@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React from "react";
 import _ from "lodash";
 import getClient from "../../api-client";
 import {
@@ -10,7 +10,7 @@ import {
     Tooltip,
     Icon, CircularProgress
 } from "@mui/material";
-import {Lightbulb, MoreVert, PowerSettingsNew, Thermostat} from "@mui/icons-material";
+import {Lightbulb, MoreVert, PowerSettingsNew} from "@mui/icons-material";
 import AbstractDevice, {IAbstractDeviceState} from "../abstract-device/AbstractDevice";
 import {FaNetworkWired} from "react-icons/all";
 
@@ -25,8 +25,22 @@ interface IEndpointComponentState extends IAbstractDeviceState {
 }
 
 class EndpointComponent extends AbstractDevice<IEndpointComponentProps, IEndpointComponentState> {
-    constructor(props: any) {
-        super(props);
+    async getDeviceInformation(): Promise<any> {
+        try {
+            return await getClient().get(`/network/endpoints/${this.props.id}`);
+        } catch (error: any) {
+            console.error(error);
+            return null;
+        }
+    }
+
+    async updateDeviceInformation(data: any): Promise<any> {
+        try {
+            return await getClient().put(`/network/endpoints/${this.props.id}`, data);
+        } catch (error: any) {
+            console.error(error);
+            return null;
+        }
     }
 
     async refreshData() {
@@ -113,6 +127,8 @@ class EndpointComponent extends AbstractDevice<IEndpointComponentProps, IEndpoin
 
         return (
             <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
+                {this.renderMenu()}
+                {this.renderInformationModal()}
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
                     <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
@@ -123,7 +139,7 @@ class EndpointComponent extends AbstractDevice<IEndpointComponentProps, IEndpoin
                                 <IconButton
                                     size="small"
                                     id={"endpoint-component-" + this.props.id}
-                                    onClick={() => { this.openMenu.bind(this) }}
+                                    onClick={(event) => { this.openMenu.bind(this)(event) }}
                                     aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
                                     aria-haspopup="true"
                                     aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}

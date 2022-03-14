@@ -13,13 +13,9 @@ class EndpointContainer extends Component<IDevicesProps, IDevicesState> {
         devices: []
     }
 
-    constructor(props: any) {
-        super(props);
-    }
-
     async componentDidMount() {
         try {
-            const { data } = await getClient().get("network/endpoints");
+            const { data } = await getClient().get("/network/endpoints");
             this.setState({
                 devices: data
             });

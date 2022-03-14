@@ -15,6 +15,7 @@ services:
     image: sryther/helix
     restart: always
     network_mode: host
+    privileged: true # Enables ping
     environment:
       ENV: PRODUCTION
       DATABASE_URI: database

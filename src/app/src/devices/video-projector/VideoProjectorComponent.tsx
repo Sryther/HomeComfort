@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React from "react";
 import _ from "lodash";
 import getClient from "../../api-client";
 import {
@@ -24,10 +24,23 @@ interface IEndpointComponentState extends IAbstractDeviceState {
 }
 
 class VideoProjectorComponent extends AbstractDevice<IEndpointComponentProps, IEndpointComponentState> {
-    constructor(props: any) {
-        super(props);
+    async getDeviceInformation(): Promise<any> {
+        try {
+            return await getClient().get(`/video-projector/viewsonic/${this.props.id}`);
+        } catch (error: any) {
+            console.error(error);
+            return null;
+        }
     }
 
+    async updateDeviceInformation(data: any): Promise<any> {
+        try {
+            return await getClient().put(`/video-projector/viewsonic/${this.props.id}`, data);
+        } catch (error: any) {
+            console.error(error);
+            return null;
+        }
+    }
 
     async refreshData() {
         try {
@@ -89,7 +102,7 @@ class VideoProjectorComponent extends AbstractDevice<IEndpointComponentProps, IE
             if (this.state.power) {
                 bgColor = "#49fdba";
                 powerButton = (
-                    <Tooltip title="Allumer">
+                    <Tooltip title="Eteindre">
                         <IconButton size="small" color="primary" onClick={() => { this.powerOff.bind(this)() }}>
                             <PowerSettingsNew sx={{ color: 'red' }} />
                         </IconButton>
@@ -127,6 +140,8 @@ class VideoProjectorComponent extends AbstractDevice<IEndpointComponentProps, IE
 
         return (
             <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
+                {this.renderMenu()}
+                {this.renderInformationModal()}
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
                     <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
@@ -136,8 +151,8 @@ class VideoProjectorComponent extends AbstractDevice<IEndpointComponentProps, IE
                             <Box sx={{ marginLeft: "auto" }}>
                                 <IconButton
                                     size="small"
-                                    id={"endpoint-component-" + this.props.id}
-                                    onClick={() => { this.openMenu.bind(this) }}
+                                    id={"video-projector-component-" + this.props.id}
+                                    onClick={(event) => { this.openMenu.bind(this)(event) }}
                                     aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
                                     aria-haspopup="true"
                                     aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}

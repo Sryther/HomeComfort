@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React from "react";
 import getClient from "../../api-client";
 import {
     Card,
@@ -19,8 +19,22 @@ interface IProjectionScreenComponentProps {
 interface IProjectionScreenState extends IAbstractDeviceState {}
 
 class ProjectionScreenComponent extends AbstractDevice<IProjectionScreenComponentProps, IProjectionScreenState> {
-    constructor(props: any) {
-        super(props);
+    async getDeviceInformation(): Promise<any> {
+        try {
+            return await getClient().get(`/projection-screen/lumene/${this.props.id}`);
+        } catch (error: any) {
+            console.error(error);
+            return null;
+        }
+    }
+
+    async updateDeviceInformation(data: any): Promise<any> {
+        try {
+            return await getClient().put(`/projection-screen/lumene/${this.props.id}`, data);
+        } catch (error: any) {
+            console.error(error);
+            return null;
+        }
     }
 
     async refreshData() {
@@ -52,6 +66,8 @@ class ProjectionScreenComponent extends AbstractDevice<IProjectionScreenComponen
     render() {
         return (
             <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }}>
+                {this.renderMenu()}
+                {this.renderInformationModal()}
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
                     <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
@@ -61,8 +77,8 @@ class ProjectionScreenComponent extends AbstractDevice<IProjectionScreenComponen
                             <Box sx={{ marginLeft: "auto" }}>
                                 <IconButton
                                     size="small"
-                                    id={"endpoint-component-" + this.props.id}
-                                    onClick={() => { this.openMenu.bind(this) }}
+                                    id={"projection-screen-component-" + this.props.id}
+                                    onClick={(event) => { this.openMenu.bind(this)(event) }}
                                     aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
                                     aria-haspopup="true"
                                     aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}

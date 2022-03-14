@@ -13,13 +13,9 @@ class AirContainer extends Component<IDevicesProps, IDevicesState> {
         devices: []
     }
 
-    constructor(props: any) {
-        super(props);
-    }
-
     async componentDidMount() {
         try {
-            const { data } = await getClient().get("air/daikin");
+            const { data } = await getClient().get("/air/daikin");
             this.setState({
                 devices: data
             });

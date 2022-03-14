@@ -8,10 +8,6 @@ interface IMenuProps {}
 interface IMenuState {}
 
 class Menu extends Component<IMenuProps, IMenuState> {
-    constructor(props: any) {
-        super(props);
-    }
-
     showSettings(event: any) {
         event.preventDefault();
     }

@@ -13,13 +13,9 @@ class CleanContainer extends Component<IDevicesProps, IDevicesState> {
         devices: []
     }
 
-    constructor(props: any) {
-        super(props);
-    }
-
     async componentDidMount() {
         try {
-            const { data } = await getClient().get("cleaning/roborocks/devices");
+            const { data } = await getClient().get("/cleaning/roborocks/devices");
             this.setState({
                 devices: data
             });
