@@ -27,17 +27,25 @@ const DaikinCreationCallbackWrapper = (...args: any[]): Promise<any> => {
 
 const DaikinCallbackWrapper = (daikinInstance: any, method: any, ...args: any[]): Promise<any> => {
     return new Promise((resolve, reject) => {
-        args.push((err: string, ret: string, response: any) => {
-            if (err) {
-                return reject(err);
+        try {
+            if (_.isNull(args)) {
+                args = [];
             }
 
-            return resolve({
-                "ret": ret,
-                "response": response
+            args.push((err: string, ret: string, response: any) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                return resolve({
+                    "ret": ret,
+                    "response": response
+                });
             });
-        });
-        method.apply(daikinInstance, args);
+            method.apply(daikinInstance, args);
+        } catch(e: any) {
+            return reject(e);
+        }
     });
 }
 
@@ -254,4 +262,36 @@ const humanizeMode = (mode: Number | String | null): string => {
     return intMode + "";
 }
 
-export default { setValues, discover, getInformation, setValuesRaw };
+const enableLEDs = async (req: Request, res: Response, next: NextFunction) => {
+    const isEnabled = req.body.enabled;
+    const ac: DaikinAirConditionerDocument | null = await DaikinAirConditioner.findById(req.params.id);
+
+    if (ac) {
+        try {
+            if (req.body.cronExpression) {
+                await CRONManager.addJob(
+                    DaikinAirConditioner.modelName,
+                    ac._id,
+                    req.body.cronExpression,
+                    isEnabled ? "Activation des LEDs" : "Désactivation des LEDs",
+                    req.originalUrl,
+                    req.method,
+                    {enabled: isEnabled}
+                );
+                return res.sendStatus(202);
+            } else {
+                const daikin = (await DaikinCreationCallbackWrapper(ac.ip4 || ac.ip6, options)).response;
+                console.log(`Enabling/disabling LEDs for Daikin AC ${ac.name} (${ac.ip4 || ac.ip6}): ${isEnabled}`);
+                const methodToInvoke = isEnabled ? daikin.enableAdapterLED : daikin.disableAdapterLED
+                const result = await DaikinCallbackWrapper(daikin, methodToInvoke);
+
+                return res.status(200).send(result);
+            }
+        } catch (error) {
+            console.error(`Couldn't enable/disable LEDs for Daikin AC ${ac.name} (${ac.ip4 || ac.ip6})`, error);
+            return res.sendStatus(500);
+        }
+    }
+}
+
+export default { setValues, discover, getInformation, setValuesRaw, enableLEDs };

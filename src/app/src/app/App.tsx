@@ -1,11 +1,27 @@
 import './App.css';
-import {Container} from "@mui/material";
+import {Container, Snackbar} from "@mui/material";
 import Menu from "../menu/Menu";
 import React, {Component} from "react";
 
 import Devices from "../devices/Devices";
 
-class App extends Component {
+interface IAppProps {}
+
+interface IAppState {
+    snackOpen: boolean,
+    snackMessage: string
+}
+
+class App extends Component<IAppProps, IAppState> {
+    constructor(props: any) {
+        super(props);
+
+        this.state = {
+            snackOpen: false,
+            snackMessage: ""
+        }
+    }
+
     componentDidMount() {
         const $linkRoboto = document.createElement("link");
         const $linkIcon = document.createElement("link");
@@ -21,6 +37,26 @@ class App extends Component {
         $metaResponsive.content = "initial-scale=1, width=device-width";
     }
 
+    setSnackOpen(opened: boolean) {
+        this.setState({
+            snackOpen: opened
+        });
+    }
+
+    setSnackMessage(message: string) {
+        this.setState({
+            snackMessage: message
+        });
+    }
+
+    handleSnackClose(event: React.SyntheticEvent | Event, reason?: string) {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        this.setSnackOpen(false);
+    };
+
     render() {
       return (
           <div className="App">
@@ -28,6 +64,12 @@ class App extends Component {
               <Container maxWidth="md">
                   <Devices />
               </Container>
+              <Snackbar
+                  open={this.state.snackOpen}
+                  autoHideDuration={6000}
+                  onClose={this.handleSnackClose.bind(this)}
+                  message={this.state.snackMessage}
+              />
           </div>
       );
     }

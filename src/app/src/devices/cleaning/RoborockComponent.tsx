@@ -7,7 +7,7 @@ import {
     CardContent,
     Typography,
     IconButton,
-    CircularProgress, Tooltip, Icon
+    CircularProgress, Tooltip, Icon, Skeleton
 } from "@mui/material";
 import {
     PlayArrow,
@@ -230,16 +230,25 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
                                 </IconButton>
                             </Box>
                         </Box>
-                        <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }}>
-                            {batteryLevelElem}%
-                            <Box sx={{ display: 'flex', m: 0.5, marginLeft: "auto" }}>
-                                {endpointState}
-                            </Box>
-                        </Typography>
+                        { !_.isNil(this.state) ?
+                            <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }}>
+                                {batteryLevelElem}%
+                                <Box sx={{ display: 'flex', m: 0.5, marginLeft: "auto" }}>
+                                    {endpointState}
+                                </Box>
+                            </Typography>
+                        :
+                            <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '28px' }} />
+                        }
                     </CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
-                        {mainControlButtons}
-                    </Box>
+                    { !_.isNil(this.state) ?
+                        <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
+                            {mainControlButtons}
+                        </Box>
+                        :
+                        <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '54px', height: '54px' }} />
+                    }
+
                 </Box>
             </Card>
         )

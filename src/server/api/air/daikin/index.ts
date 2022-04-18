@@ -8,5 +8,6 @@ router.post("/discover", ActionsAPI.discover);
 router.get("/:id/information", ActionsAPI.getInformation);
 router.put("/:id/set-values", ActionsAPI.setValues);
 router.post("/:id/set-values", ActionsAPI.setValues);
+router.post("/:id/leds", ActionsAPI.enableLEDs);
 
 export default router;

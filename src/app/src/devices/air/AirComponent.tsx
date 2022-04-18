@@ -17,7 +17,7 @@ import {
     List,
     ListItem,
     ListItemIcon,
-    ListItemText, Modal, Stack
+    ListItemText, Modal, Stack, Skeleton
 } from "@mui/material";
 import {
     Thermostat,
@@ -28,7 +28,11 @@ import {
     LocalFireDepartment,
     Air,
     AcUnit,
-    Autorenew, Stream, BarChart
+    Autorenew,
+    Stream,
+    BarChart,
+    LightModeTwoTone,
+    NightlightTwoTone
 } from "@mui/icons-material";
 import { FaLeaf } from "react-icons/fa";
 import { ImPower } from "react-icons/im";
@@ -245,7 +249,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                 <ListItemIcon><FaLeaf style={{"color": "green "}}/><Stream sx={{"color": "lightblue"}} /></ListItemIcon>
                 <ListItemText>Mode économique et purification</ListItemText>
             </MenuItem>)]
-    ])
+        ]);
 
         listItemsMode.delete(this.state.acControl.mode);
         listItemsSpecialMode.delete(this.state.acControl.specialMode);
@@ -262,12 +266,33 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
         }
 
         menu.push(<Divider key={"divideSuperSpecialWithStats"} />);
+        menu.push(<MenuItem key={`air-enable-leds-${this.props.id}`} onClick={async () => this.enableLEDs.bind(this)(true)}>
+            <ListItemIcon><LightModeTwoTone /></ListItemIcon>
+            <ListItemText>Activer les LEDs</ListItemText>
+        </MenuItem>);
+        menu.push(<MenuItem key={`air-disable-leds-${this.props.id}`} onClick={async () => this.enableLEDs.bind(this)(false)}>
+            <ListItemIcon><NightlightTwoTone /></ListItemIcon>
+            <ListItemText>Désactiver les LEDs</ListItemText>
+        </MenuItem>);
+
+        menu.push(<Divider key={"divideLed"} />);
         menu.push(<MenuItem key={`air-getstats-${this.props.id}`} onClick={() => this.displayStats.bind(this)()}>
             <ListItemIcon><BarChart /></ListItemIcon>
             <ListItemText>Voir les statistiques</ListItemText>
         </MenuItem>);
 
         return menu;
+    }
+
+    async enableLEDs(enabled: boolean) {
+        try {
+            await getClient().post(`/air/daikin/${this.props.id}/leds`, { enabled: enabled });
+
+            this.closeMenu();
+        } catch (error: any) {
+            console.error(error);
+            return null;
+        }
     }
 
     displayStats() {
@@ -399,29 +424,9 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
     }
 
     render() {
-        let togglePower = <div />;
-        let controls = <div />;
         let mode = <div />;
         let specialMode = <div />;
         if (!_.isNil(this.state) && !_.isNil(this.state.acControl)) {
-            togglePower = (
-                <Switch sx={{ marginLeft: "auto" }} color="secondary" onClick={() => this.power.bind(this)(!this.state.acControl.power)} defaultChecked={this.state.acControl.power} />
-            );
-
-            controls = (
-                <Box>
-                    <Tooltip title="Diminuer la température désirée">
-                        <IconButton color="primary" aria-label="previous" onClick={() => { this.changeTemp.bind(this)(-0.5) }}>
-                            <Remove />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Augmenter la température désirée">
-                        <IconButton color="primary" aria-label="next" onClick={() => { this.changeTemp.bind(this)(0.5) }}>
-                            <Add />
-                        </IconButton>
-                    </Tooltip>
-                </Box>
-            );
 
             let modeVerbose = "";
             let modeIcon = <div />;
@@ -513,8 +518,13 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                             <Typography component="div" variant="h5">
                                 <Air /> {this.props.name}
                             </Typography>
-                            <Box sx={{ marginLeft: "auto" }}>
-                                {togglePower}
+
+                            <Box sx={{ marginLeft: "auto", display: "flex" }}>
+                                { !_.isNil(this.state) && !_.isNil(this.state.acControl) ?
+                                    <Switch sx={{ marginLeft: "auto" }} color="secondary" onClick={() => this.power.bind(this)(!this.state.acControl.power)} defaultChecked={this.state.acControl.power} />
+                                :
+                                    <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '58px', height: '38px' }} />
+                                }
                                 <IconButton
                                     size="small"
                                     id={"air-component-" + this.props.id}
@@ -540,50 +550,69 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                                 horizontal: 'left',
                             }}
                         >
-                            <List sx={{ p: 2 }}>
-                                <ListItem>
-                                    <ListItemIcon>
-                                        <Thermostat />
-                                    </ListItemIcon>
-                                    <ListItemText>
-                                        {!_.isNil(this.state) && !_.isNil(this.state.acSensor) ? this.state.acSensor.outdoorTemperature : <CircularProgress size={16} color="inherit" />} °C à l'extérieur
-                                    </ListItemText>
-                                </ListItem>
-                                <ListItem>
-                                    <ListItemIcon>
-                                        <WiHumidity style={{ fontSize: "26px" }} />
-                                    </ListItemIcon>
-                                    <ListItemText>
-                                        {!_.isNil(this.state) && !_.isNil(this.state.acSensor) ? this.state.acSensor.indoorHumidity : <CircularProgress size={16} color="inherit" />}%
-                                    </ListItemText>
-                                </ListItem>
-                            </List>
+                            {!_.isNil(this.state) && !_.isNil(this.state.acSensor) ?
+                                <List sx={{p: 2}}>
+                                    <ListItem>
+                                        <ListItemIcon>
+                                            <Thermostat/>
+                                        </ListItemIcon>
+                                        <ListItemText>
+                                            { this.state.acSensor.outdoorTemperature }°C à l'extérieur
+                                        </ListItemText>
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemIcon>
+                                            <WiHumidity style={{fontSize: "26px"}}/>
+                                        </ListItemIcon>
+                                        <ListItemText>
+                                            { this.state.acSensor.indoorHumidity }%
+                                        </ListItemText>
+                                    </ListItem>
+                                </List>
+                                :
+                                <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '36px' }} />
+                            }
                         </Popover>
-                        <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }} onClick={(event: React.MouseEvent) => this.openAdditionalInformationPopover.bind(this)(event)}>
-                            <Tooltip title={"Température demandée"}>
-                                <Box sx={{ display: 'flex', m: 0.5 }}>
-                                    <Thermostat />
-                                    {!_.isNil(this.state) && !_.isNil(this.state.acControl) ?
-                                        this.state.acControl.targetTemperature : <CircularProgress size={16} color="inherit" />
-                                    } °C
+                        {!_.isNil(this.state) && !_.isNil(this.state.acControl) ?
+                            <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }} onClick={(event: React.MouseEvent) => this.openAdditionalInformationPopover.bind(this)(event)}>
+                                <Tooltip title={"Température demandée"}>
+                                    <Box sx={{display: 'flex', m: 0.5}}>
+                                        <Thermostat/>
+                                        { this.state.acControl.targetTemperature }°C
+                                    </Box>
+                                </Tooltip>
+                                <Tooltip title={"Température intérieure"}>
+                                    <Box sx={{display: 'flex', m: 0.5}}>
+                                        <Home/>
+                                        {this.state.acSensor.indoorTemperature }°C
+                                    </Box>
+                                </Tooltip>
+                                <Box sx={{display: 'flex', m: 0.5, marginLeft: "auto"}}>
+                                    {mode}
+                                    {specialMode}
                                 </Box>
-                            </Tooltip>
-                            <Tooltip title={"Température intérieure"}>
-                                <Box sx={{ display: 'flex', m: 0.5 }}>
-                                    <Home />
-                                    {!_.isNil(this.state) && !_.isNil(this.state.acControl) ?
-                                        this.state.acSensor.indoorTemperature : <CircularProgress size={12} color="inherit" />
-                                    } °C
-                                </Box>
-                            </Tooltip>
-                            <Box sx={{ display: 'flex', m: 0.5, marginLeft: "auto" }}>
-                                {mode}
-                                {specialMode}
-                            </Box>
-                        </Typography>
+                            </Typography>
+                            :
+                            <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%' }} />
+                        }
                     </CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
-                        {controls}
+                        {!_.isNil(this.state) && !_.isNil(this.state.acControl) ?
+                            <Box>
+                                <Tooltip title="Diminuer la température désirée">
+                                    <IconButton color="primary" aria-label="previous" onClick={() => { this.changeTemp.bind(this)(-0.5) }}>
+                                        <Remove />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Augmenter la température désirée">
+                                    <IconButton color="primary" aria-label="next" onClick={() => { this.changeTemp.bind(this)(0.5) }}>
+                                        <Add />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                            :
+                            <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '80px', height: '48px' }} />
+                        }
                     </Box>
                 </Box>
             </Card>

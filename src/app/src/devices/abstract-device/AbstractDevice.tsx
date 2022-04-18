@@ -143,7 +143,7 @@ abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> exten
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    width: 400,
+                    width: 600,
                     bgcolor: 'background.paper',
                     boxShadow: 24,
                     borderRadius: '5px',
@@ -154,7 +154,7 @@ abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> exten
                         id={uuid.v4()}
                         label="Configuration"
                         multiline
-                        rows={10}
+                        rows={14}
                         onChange={handleTextInputChange}
                         defaultValue={this.state.deviceInformation}
                     />
