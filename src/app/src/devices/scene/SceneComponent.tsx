@@ -1,6 +1,5 @@
 import React from "react";
 import _ from "lodash";
-import getClient from "../../api-client";
 import {
     Card,
     Box,
@@ -13,15 +12,17 @@ import {
     ListItemText, List,
 } from "@mui/material";
 import {PlaylistPlay, MoreVert, PlayArrow} from "@mui/icons-material";
-import AbstractDevice, {IAbstractDeviceState} from "../abstract-device/AbstractDevice";
+import AbstractDevice, {IAbstractDeviceState, IAbstractDeviceProps} from "../abstract-device/AbstractDevice";
+import SceneApiClient from "../../api-client/clients/SceneApiClient";
+import ApiClient from "../../api-client";
 
-interface ISceneComponentProps {
+interface ISceneComponentProps extends IAbstractDeviceProps {
     id: string,
     name: string
 }
 
 interface ISceneComponentState extends IAbstractDeviceState {
-    actions: any[]
+    actions: any[],
 }
 
 class SceneComponent extends AbstractDevice<ISceneComponentProps, ISceneComponentState> {
@@ -58,7 +59,7 @@ class SceneComponent extends AbstractDevice<ISceneComponentProps, ISceneComponen
                             };
                     }
 
-                    const queryDevice = await getClient().get(`${route}/${action.deviceId}`);
+                    const queryDevice = await ApiClient.getInstance().get(`${route}/${action.deviceId}`);
                     return {
                         name: queryDevice.data.name ? queryDevice.data.name : action.deviceId,
                         deviceType: deviceType,
@@ -74,7 +75,7 @@ class SceneComponent extends AbstractDevice<ISceneComponentProps, ISceneComponen
 
     async getDeviceInformation() {
         try {
-            return await getClient().get(`/scene/${this.props.id}`);
+            return await SceneApiClient.getInstance().get(this.props.id);
         } catch (error: any) {
             console.error(error);
             return null;
@@ -83,7 +84,7 @@ class SceneComponent extends AbstractDevice<ISceneComponentProps, ISceneComponen
 
     async updateDeviceInformation(data: any) {
         try {
-            return await getClient().put(`/scene/${this.props.id}`, data);
+            return await SceneApiClient.getInstance().update(this.props.id, data);
         } catch (error: any) {
             console.error(error);
             return null;
@@ -96,7 +97,7 @@ class SceneComponent extends AbstractDevice<ISceneComponentProps, ISceneComponen
                 isLoading: true
             });
 
-            await getClient().post(`/scene/${this.props.id}`);
+            await SceneApiClient.getInstance().run(`/scene/${this.props.id}`);
 
             this.setState({
                 isLoading: false
@@ -116,11 +117,10 @@ class SceneComponent extends AbstractDevice<ISceneComponentProps, ISceneComponen
             listActions = this.state.actions.map((action: any) => {
                 i++;
                 return (
-                    <ListItem>
+                    <ListItem key={`${this.props.id}-${action.deviceId}-${i}`}>
                         <ListItemText
                             primary={action.description}
                             secondary={action.deviceType + " - " + action.name}
-                            key={`${this.props.id}-${action.deviceId}`}
                         />
                     </ListItem>
                 );
@@ -128,7 +128,7 @@ class SceneComponent extends AbstractDevice<ISceneComponentProps, ISceneComponen
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }}>
+            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }} className={this.renderError()}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}

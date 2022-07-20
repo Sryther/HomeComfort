@@ -1,23 +1,23 @@
 import React, {Component} from "react";
-import AirComponent from "./AirComponent";
-import getClient from "../../api-client";
-import {Box, Stack} from "@mui/material";
+import AirDaikinComponent from "./AirDaikinComponent";
+import {Stack} from "@mui/material";
+import AirApiClient from "../../api-client/clients/AirApiClient";
 
 interface IDevicesProps {}
 interface IDevicesState {
-    devices: any[]
+    daikinDevices: any[]
 }
 
 class AirContainer extends Component<IDevicesProps, IDevicesState> {
     state = {
-        devices: []
+        daikinDevices: []
     }
 
     async componentDidMount() {
         try {
-            const { data } = await getClient().get("/air/daikin");
+            const { data } = await AirApiClient.getInstance().allDaikins();
             this.setState({
-                devices: data
+                daikinDevices: data
             });
         } catch(error) {
             console.error(error);
@@ -27,7 +27,7 @@ class AirContainer extends Component<IDevicesProps, IDevicesState> {
     render() {
         return (
             <Stack direction="row">
-                {this.state.devices.map((device: any) => <AirComponent key={device._id} id={device._id} name={device.name} ip4={device.ip4} ip6={device.ip6} />)}
+                {this.state.daikinDevices.map((device: any) => <AirDaikinComponent key={device._id} id={device._id} name={device.name} ip4={device.ip4} ip6={device.ip6} />)}
             </Stack>
         )
     }

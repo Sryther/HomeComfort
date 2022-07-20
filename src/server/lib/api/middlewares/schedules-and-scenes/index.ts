@@ -1,23 +1,22 @@
 import CRONManager from "../../CRONManager";
-import {NextFunction, Request, Response} from "express";
-// @ts-ignore
+import {NextFunction, Response} from "express";
 import _ from "lodash";
 
 import Scene from "../../../../data/models/scene/Scene";
-import {ActionDocument} from "../../../../data/models/action/Action";
-import {de} from "cronstrue/dist/i18n/locales/de";
+import Action from "../../../../data/models/action/Action";
+import {HelixRequest} from "../add-properties-to-request";
 
-const schedulesAndScenesInterceptor = async (req: Request, res: Response, next: NextFunction) => {
+const schedulesAndScenesInterceptor = async (req: HelixRequest, res: Response, next: NextFunction) => {
     try {
         const params = Object.assign({}, req.body);
         delete params.cronExpression;
 
         if (req.body.cronExpression) {
             const schedule = await CRONManager.addJob(
-                "TODO",
-                req.params.id,
+                req.deviceType,
+                req.deviceId,
                 req.body.cronExpression,
-                "TODO",
+                req.body.description,
                 req.originalUrl,
                 req.method,
                 params
@@ -39,19 +38,20 @@ const schedulesAndScenesInterceptor = async (req: Request, res: Response, next: 
                     nextOrder = params.order;
                     delete params.order;
                 }
+
                 let deviceId = "";
                 const matcherDeviceId = req.originalUrl.match("[0-9a-fA-F]{24}");
                 if (matcherDeviceId !== null && matcherDeviceId.length > 0) {
                     deviceId = matcherDeviceId[0];
                 }
 
-                const action: ActionDocument = {
+                const action = new Action({
                     deviceId: deviceId,
                     deviceType: "",
                     httpVerb: req.method,
                     route: req.originalUrl,
                     order: nextOrder
-                };
+                });
 
                 if (params.description) {
                     action.description = params.description;

@@ -1,14 +1,14 @@
 import Cron from 'cron';
 import {ObjectId} from "mongoose";
 import cronstrue from 'cronstrue/i18n';
-import axios, { Method, AxiosRequestConfig } from "axios";
+import axios, {Method, AxiosRequestConfig} from "axios";
 
-import Schedule, { ScheduleDocument } from '../../data/models/schedule/Schedule';
+import Schedule, {ScheduleDocument} from '../../data/models/schedule/Schedule';
 import Config from '../../config';
 import {SceneDocument} from "../../data/models/scene/Scene";
 import {ActionDocument} from "../../data/models/action/Action";
 
-const addSchedule = async (deviceType: string, deviceId: ObjectId | string, cronExpression: string, description: string, route: string, httpVerb: string, args: any): Promise<ScheduleDocument> => {
+const addSchedule = async (deviceType: string | undefined, deviceId: ObjectId | string | undefined, cronExpression: string, description: string, route: string, httpVerb: string, args: any): Promise<ScheduleDocument> => {
     const schedule = new Schedule({
         cronExpression: cronExpression,
         description: cronstrue.toString(cronExpression, {locale: "fr"}) + "\n" + description,
@@ -73,7 +73,10 @@ export default class CRONManager {
             const verb: Method = action.httpVerb as unknown as Method;
             const requestConfig: AxiosRequestConfig = {
                 method: verb,
-                url: action.route
+                url: action.route,
+                headers: {
+                    "helix": "self"
+                }
             };
 
             if (action.args) {
@@ -84,7 +87,7 @@ export default class CRONManager {
                 }
             }
             return await this.axiosInstance.request(requestConfig);
-        } catch(error: any) {
+        } catch (error: any) {
             return Promise.reject(error);
         }
     }
@@ -101,7 +104,7 @@ export default class CRONManager {
         }
     }
 
-    static async addJob(deviceType: string, deviceId: ObjectId | string, cronExpression: string, description: string, route: string, httpVerb: string, args: any): Promise<ScheduleDocument | null> {
+    static async addJob(deviceType: string | undefined, deviceId: ObjectId | string | undefined, cronExpression: string, description: string, route: string, httpVerb: string, args: any): Promise<ScheduleDocument | null> {
         try {
             const schedule = await addSchedule(deviceType, deviceId, cronExpression, description, route, httpVerb, args);
 

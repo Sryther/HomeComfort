@@ -1,5 +1,5 @@
 import { Document, Schema, model } from 'mongoose';
-import ActionSchema, {ActionDocument} from "../action/Action";
+import {ActionDocument, ActionSchema} from "../action/Action";
 
 export interface SceneDocument extends Document {
     name: string,

@@ -15,6 +15,8 @@ import SceneApi from './scene';
 import ProjectionScreenApi from './projection-screen';
 import VideoProjectorApi from './video-projector';
 import schedulesAndScenesInterceptor from "../lib/api/middlewares/schedules-and-scenes";
+import addPropertiesToRequestInterceptor from "../lib/api/middlewares/add-properties-to-request";
+import saveEventsInterceptor from "../lib/api/middlewares/save-events";
 
 const App = express();
 const router = Router();
@@ -24,6 +26,8 @@ const expressSwagger = ExpressSwaggerGenerator(App);
 App.use(cors());
 App.use(bodyParser.json());
 App.use(morgan('tiny'));
+App.use(addPropertiesToRequestInterceptor);
+App.use(saveEventsInterceptor);
 App.use(schedulesAndScenesInterceptor);
 
 // Sub routers.

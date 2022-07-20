@@ -1,6 +1,5 @@
 import React from "react";
 import _ from "lodash";
-import getClient from "../../api-client";
 import {
     Card,
     Box,
@@ -11,23 +10,24 @@ import {
     Icon, CircularProgress
 } from "@mui/material";
 import {Lightbulb, MoreVert, PowerSettingsNew} from "@mui/icons-material";
-import AbstractDevice, {IAbstractDeviceState} from "../abstract-device/AbstractDevice";
-import {FaNetworkWired} from "react-icons/all";
+import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../abstract-device/AbstractDevice";
+import {FaNetworkWired} from "react-icons/fa";
+import NetworkApiClient from "../../api-client/clients/NetworkApiClient";
 
-interface IEndpointComponentProps {
+interface INetworkEndpointComponentProps extends IAbstractDeviceProps {
     id: string,
     name: string,
     ip: string
 }
 
-interface IEndpointComponentState extends IAbstractDeviceState {
+interface INetworkEndpointComponentState extends IAbstractDeviceState {
     alive: boolean
 }
 
-class EndpointComponent extends AbstractDevice<IEndpointComponentProps, IEndpointComponentState> {
+class NetworkEndpointComponent extends AbstractDevice<INetworkEndpointComponentProps, INetworkEndpointComponentState> {
     async getDeviceInformation(): Promise<any> {
         try {
-            return await getClient().get(`/network/endpoints/${this.props.id}`);
+            return await NetworkApiClient.getInstance().getEndpoint(this.props.id);
         } catch (error: any) {
             console.error(error);
             return null;
@@ -36,7 +36,7 @@ class EndpointComponent extends AbstractDevice<IEndpointComponentProps, IEndpoin
 
     async updateDeviceInformation(data: any): Promise<any> {
         try {
-            return await getClient().put(`/network/endpoints/${this.props.id}`, data);
+            return await NetworkApiClient.getInstance().updateEndpoint(this.props.id, data);
         } catch (error: any) {
             console.error(error);
             return null;
@@ -45,15 +45,13 @@ class EndpointComponent extends AbstractDevice<IEndpointComponentProps, IEndpoin
 
     async refreshData() {
         try {
-            if (this.isRefreshDataRunning) return Promise.resolve();
-            this.isRefreshDataRunning = true;
-            const { data } = await getClient().get(`/network/endpoints/${this.props.id}/alive`);
-            this.isRefreshDataRunning = false;
+            if (this.state.hasRaisenANetworkError || this.state.isRefreshDataRunning) return Promise.resolve();
+            const { data } = await NetworkApiClient.getInstance().isEndpointAlive(this.props.id);
             this.setState({
                 alive: data
             });
         } catch (e: any) {
-            console.error(e)
+            return Promise.reject(e);
         }
     }
 
@@ -63,11 +61,9 @@ class EndpointComponent extends AbstractDevice<IEndpointComponentProps, IEndpoin
                 isLoading: true
             });
             // Try 3 times.
-            await getClient().post(`network/endpoints/${this.props.id}/wake`);
-            await getClient().post(`network/endpoints/${this.props.id}/wake`);
-            await getClient().post(`network/endpoints/${this.props.id}/wake`);
-
-            await this.refreshData();
+            await NetworkApiClient.getInstance().wakeEndpoint(this.props.id);
+            await NetworkApiClient.getInstance().wakeEndpoint(this.props.id);
+            await NetworkApiClient.getInstance().wakeEndpoint(this.props.id);
 
             setTimeout(() => {
                 this.setState({
@@ -126,7 +122,7 @@ class EndpointComponent extends AbstractDevice<IEndpointComponentProps, IEndpoin
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
+            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }} className={this.renderError()}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
@@ -167,4 +163,4 @@ class EndpointComponent extends AbstractDevice<IEndpointComponentProps, IEndpoin
     }
 }
 
-export default EndpointComponent;
+export default NetworkEndpointComponent;

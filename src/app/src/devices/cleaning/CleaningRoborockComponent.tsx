@@ -1,6 +1,5 @@
 import React from "react";
 import _ from "lodash";
-import getClient from "../../api-client";
 import {
     Card,
     Box,
@@ -17,16 +16,17 @@ import {
 } from "@mui/icons-material";
 import {Battery20, Battery30, Battery50, Battery60, Battery80, Battery90, BatteryFull} from "@mui/icons-material";
 import {BatteryCharging20, BatteryCharging30, BatteryCharging50, BatteryCharging60, BatteryCharging80, BatteryCharging90, BatteryChargingFull} from "@mui/icons-material";
-import AbstractDevice, {IAbstractDeviceState} from "../abstract-device/AbstractDevice";
-import {GiVacuumCleaner} from "react-icons/all";
+import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../abstract-device/AbstractDevice";
+import {GiVacuumCleaner} from "react-icons/gi";
+import CleanApiClient from "../../api-client/clients/CleanApiClient";
 
-interface IRoborockComponentProps {
+interface ICleaningRoborockComponentProps extends IAbstractDeviceProps {
     id: string,
     name: string,
     ip: string
 }
 
-interface IRoborockComponentState extends IAbstractDeviceState {
+interface ICleaningRoborockComponentState extends IAbstractDeviceState {
     batteryLevel: number,
     charging: boolean,
     cleaning: boolean,
@@ -59,10 +59,10 @@ const iconPouleBatteriesInCharge = {
     10: <BatteryChargingFull />
 }
 
-class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoborockComponentState> {
+class CleaningRoborockComponent extends AbstractDevice<ICleaningRoborockComponentProps, ICleaningRoborockComponentState> {
     async getDeviceInformation(): Promise<any> {
         try {
-            return await getClient().get(`/cleaning/roborocks/devices/${this.props.id}`);
+            return await CleanApiClient.getInstance().getRoborock(this.props.id);
         } catch (error: any) {
             console.error(error);
             return null;
@@ -71,7 +71,7 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
 
     async updateDeviceInformation(data: any): Promise<any> {
         try {
-            return await getClient().put(`/cleaning/roborocks/devices/${this.props.id}`, data);
+            return await CleanApiClient.getInstance().updateRoborock(this.props.id, data);
         } catch (error: any) {
             console.error(error);
             return null;
@@ -80,22 +80,17 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
 
     async refreshData() {
         try {
-            if (this.isRefreshDataRunning) return Promise.resolve();
-            this.isRefreshDataRunning = true;
-            const { data } = await getClient().get(`/cleaning/roborocks/devices/${this.props.id}/capabilities/state`);
-            this.isRefreshDataRunning = false;
+            if (this.state.hasRaisenANetworkError || this.state.isRefreshDataRunning) return Promise.resolve();
+            const { data } = await CleanApiClient.getInstance().getRoborockState(this.props.id);
             this.setState(data);
         } catch (e: any) {
-            // TODO
+            return Promise.reject(e);
         }
     }
 
     async clean() {
         try {
-            await getClient().post(`/cleaning/roborocks/devices/${this.props.id}/capabilities/control`, {
-                "action": "app_start"
-            });
-            await this.refreshData();
+            await CleanApiClient.getInstance().startRoborock(this.props.id);
         } catch (e: any) {
             // TODO
         }
@@ -103,10 +98,7 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
 
     async pause() {
         try {
-            await getClient().post(`/cleaning/roborocks/devices/${this.props.id}/capabilities/control`, {
-                "action": "app_pause"
-            });
-            await this.refreshData();
+            await CleanApiClient.getInstance().pauseRoborock(this.props.id);
         } catch (e: any) {
             // TODO
         }
@@ -114,10 +106,7 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
 
     async stop() {
         try {
-            await getClient().post(`/cleaning/roborocks/devices/${this.props.id}/capabilities/control`, {
-                "action": "app_stop"
-            });
-            await this.refreshData();
+            await CleanApiClient.getInstance().stopRoborock(this.props.id);
         } catch (e: any) {
             // TODO
         }
@@ -127,9 +116,7 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
         try {
             await this.stop();
             setTimeout(async () => {
-                await getClient().post(`/cleaning/roborocks/devices/${this.props.id}/capabilities/control`, {
-                    "action": "app_charge"
-                });
+                await CleanApiClient.getInstance().chargeRoborock(this.props.id);
                 await this.refreshData.bind(this)();
             }, 3000);
         } catch (e: any) {
@@ -206,7 +193,7 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
+            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }} className={this.renderError()}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
@@ -255,4 +242,4 @@ class RoborockComponent extends AbstractDevice<IRoborockComponentProps, IRoboroc
     }
 }
 
-export default RoborockComponent;
+export default CleaningRoborockComponent;

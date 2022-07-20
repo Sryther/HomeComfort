@@ -1,14 +1,12 @@
 import React from "react";
 import _ from "lodash";
 import moment from "moment";
-import getClient from "../../api-client";
 import {
     Card,
     Box,
     CardContent,
     Typography,
     IconButton,
-    CircularProgress,
     Tooltip,
     Switch,
     MenuItem,
@@ -36,9 +34,12 @@ import {
 } from "@mui/icons-material";
 import { FaLeaf } from "react-icons/fa";
 import { ImPower } from "react-icons/im";
-import AbstractDevice, {IAbstractDeviceState} from "../abstract-device/AbstractDevice";
-import {IoWaterOutline, WiHumidity} from "react-icons/all";
+import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../abstract-device/AbstractDevice";
+import {IoWaterOutline} from "react-icons/io5";
+import {WiHumidity} from "react-icons/wi";
 import {AxisOptions, Chart} from "react-charts";
+import {v4 as uuidv4} from "uuid";
+import AirApiClient from "../../api-client/clients/AirApiClient";
 
 type Consumption = {
     date: string,
@@ -55,14 +56,14 @@ type Stats = {
     monthly: Series<Consumption>[]
 }
 
-interface IAirComponentProps {
+interface IAirDaikinComponentProps extends IAbstractDeviceProps {
     id: string,
     name: string,
     ip4?: string,
     ip6?: string
 }
 
-interface IAirComponentState extends IAbstractDeviceState {
+interface IAirDaikinComponentState extends IAbstractDeviceState {
     acControl?: any,
     acSensor?: any,
     acModel?: any,
@@ -77,7 +78,7 @@ interface IAirComponentState extends IAbstractDeviceState {
 
 moment.locale('fr');
 
-class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState> {
+class AirDaikinComponent extends AbstractDevice<IAirDaikinComponentProps, IAirDaikinComponentState> {
     constructor(props: any) {
         super(props);
 
@@ -94,7 +95,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
 
     async getDeviceInformation(): Promise<any> {
         try {
-            return await getClient().get(`/air/daikin/${this.props.id}`);
+            return await AirApiClient.getInstance().getDaikin(this.props.id);
         } catch (error: any) {
             console.error(error);
             return null;
@@ -103,7 +104,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
 
     async updateDeviceInformation(data: any): Promise<any> {
         try {
-            return await getClient().put(`/air/daikin/${this.props.id}`, data);
+            return await AirApiClient.getInstance().updateDaikin(this.props.id, data);
         } catch (error: any) {
             console.error(error);
             return null;
@@ -112,22 +113,19 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
 
     async refreshData() {
         try {
-            if (this.isRefreshDataRunning) return Promise.resolve();
-            this.isRefreshDataRunning = true;
-            const { data } = await getClient().get(`/air/daikin/${this.props.id}/information`);
+            if (this.state.hasRaisenANetworkError || this.state.isRefreshDataRunning) return Promise.resolve();
+            const { data } = await AirApiClient.getInstance().getDaikinInformation(this.props.id);
             this.setState(data);
-            this.isRefreshDataRunning = false;
         } catch (e: any) {
-            // TODO
+            return Promise.reject(e);
         }
     }
 
     async power(state: boolean) {
         try {
-            await getClient().post(`/air/daikin/${this.props.id}/set-values`, {
+            await AirApiClient.getInstance().setDaikinValues(this.props.id, {
                 power: state
             });
-            await this.refreshData();
         } catch(error) {
             console.error(error);
         }
@@ -135,10 +133,9 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
 
     async changeTemp(inc: number) {
         try {
-            await getClient().post(`/air/daikin/${this.props.id}/set-values`, {
+            await AirApiClient.getInstance().setDaikinValues(this.props.id, {
                 targetTemperature: this.state.acControl.targetTemperature + inc
             });
-            await this.refreshData();
         } catch(error) {
             console.error(error);
         }
@@ -146,10 +143,9 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
 
     async setMode(mode: string) {
         try {
-            await getClient().post(`/air/daikin/${this.props.id}/set-values`, {
+            await AirApiClient.getInstance().setDaikinValues(this.props.id, {
                 mode: mode
             });
-            await this.refreshData();
         } catch(error) {
             console.error(error);
         }
@@ -159,7 +155,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
         try {
             if (!_.isNil(this.state.acControl.specialMode)) {
                 for (const specialMode of this.state.acControl.specialMode.split("/")) {
-                    await getClient().post(`air/daikin/${this.props.id}/set-values`, {
+                    await AirApiClient.getInstance().setDaikinValues(this.props.id, {
                         specialMode: specialMode,
                         specialModeActive: false
                     });
@@ -172,11 +168,10 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
 
     async setSpecialMode(specialMode: string) {
         try {
-            await getClient().post(`air/daikin/${this.props.id}/set-values`, {
+            await AirApiClient.getInstance().setDaikinValues(this.props.id, {
                 specialMode: specialMode,
                 specialModeActive: true
             });
-            await this.refreshData();
         } catch(error) {
             console.error(error);
         }
@@ -188,43 +183,43 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
         }
 
         const listItemsMode: Map<string, JSX.Element> = new Map<string, JSX.Element>([
-            ["HOT", (<MenuItem key={"HOT"} onClick={async () => await this.setMode.bind(this)("HOT")}>
+            ["HOT", (<MenuItem key={"HOT" + uuidv4()} onClick={async () => await this.setMode.bind(this)("HOT")}>
                 <ListItemIcon><LocalFireDepartment sx={{"color": "orange"}} /></ListItemIcon>
                 <ListItemText>Mode chauffage</ListItemText>
             </MenuItem>)],
-            ["COLD", (<MenuItem key={"COLD"} onClick={async () => await this.setMode.bind(this)("COLD")}>
+            ["COLD", (<MenuItem key={"COLD" + uuidv4()} onClick={async () => await this.setMode.bind(this)("COLD")}>
                 <ListItemIcon><AcUnit sx={{"color": "lightblue"}} /></ListItemIcon>
                 <ListItemText>Mode climisation</ListItemText>
             </MenuItem>)],
-            ["FAN", (<MenuItem key={"FAN"} onClick={async () => await this.setMode.bind(this)("FAN")}>
+            ["FAN", (<MenuItem key={"FAN" + uuidv4()} onClick={async () => await this.setMode.bind(this)("FAN")}>
                 <ListItemIcon><Air /></ListItemIcon>
                 <ListItemText>Mode ventilation</ListItemText>
             </MenuItem>)],
-            ["AUTO", (<MenuItem key={"AUTO"} onClick={async () => await this.setMode.bind(this)("AUTO")}>
+            ["AUTO", (<MenuItem key={"AUTO" + uuidv4()} onClick={async () => await this.setMode.bind(this)("AUTO")}>
                 <ListItemIcon><Autorenew /></ListItemIcon>
                 <ListItemText>Mode automatique</ListItemText>
             </MenuItem>)],
-            ["DEHUMDID", (<MenuItem key={"DEHUMDID"} onClick={async () => await this.setMode.bind(this)("DEHUMDID")}>
+            ["DEHUMDID", (<MenuItem key={"DEHUMDID" + uuidv4()} onClick={async () => await this.setMode.bind(this)("DEHUMDID")}>
                 <ListItemIcon><IoWaterOutline style={{ fontSize: "24px" }} /></ListItemIcon>
                 <ListItemText>Mode déshumidification</ListItemText>
             </MenuItem>)]
         ]);
         const listItemsSpecialMode: Map<string, JSX.Element> = new Map<string, JSX.Element>([
-            ["STREAMER", (<MenuItem key={"STREAMER"} onClick={async () => {
+            ["STREAMER", (<MenuItem key={"STREAMER" + uuidv4()} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("STREAMER");
             }}>
                 <ListItemIcon><Stream sx={{"color": "lightblue"}} /></ListItemIcon>
                 <ListItemText>Mode purification</ListItemText>
             </MenuItem>)],
-            ["POWERFUL", (<MenuItem key={"POWERFUL"} onClick={async () => {
+            ["POWERFUL", (<MenuItem key={"POWERFUL" + uuidv4()} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("POWERFUL");
             }}>
                 <ListItemIcon><ImPower style={{"color": "red", fontSize: "24px"}} /></ListItemIcon>
                 <ListItemText>Mode puissant</ListItemText>
             </MenuItem>)],
-            ["ECONO", (<MenuItem key={"ECONO"} onClick={async () => {
+            ["ECONO", (<MenuItem key={"ECONO" + uuidv4()} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("ECONO");
             }}>
@@ -233,7 +228,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
             </MenuItem>)]
         ]);
         const listItemsSuperSpecialMode: Map<string, JSX.Element> = new Map<string, JSX.Element>([
-            ["POWERFUL/STREAMER", (<MenuItem key={"POWERFUL/STREAMER"} onClick={async () => {
+            ["POWERFUL/STREAMER", (<MenuItem key={"POWERFUL/STREAMER" + uuidv4()} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("POWERFUL");
                 await this.setSpecialMode.bind(this)("STREAMER");
@@ -241,7 +236,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                 <ListItemIcon><ImPower style={{"color": "red"}} /><Stream sx={{"color": "lightblue"}} /></ListItemIcon>
                 <ListItemText>Mode puissant et purification</ListItemText>
             </MenuItem>)],
-            ["ECONO/STREAMER", (<MenuItem key={"ECONO/STREAMER"} onClick={async () => {
+            ["ECONO/STREAMER", (<MenuItem key={"ECONO/STREAMER" + uuidv4()} onClick={async () => {
                 await this.resetActualSpecialMode.bind(this)();
                 await this.setSpecialMode.bind(this)("ECONO");
                 await this.setSpecialMode.bind(this)("STREAMER");
@@ -256,27 +251,27 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
         listItemsSuperSpecialMode.delete(this.state.acControl.specialMode);
 
         const menu: Array<JSX.Element> = Array.from(listItemsMode.values());
-        menu.push(<Divider key={"divideStandardWithSpecial"} />);
+        menu.push(<Divider key={"divideStandardWithSpecial" + uuidv4()} />);
         for (const itemSpecial of Array.from(listItemsSpecialMode.values())) {
             menu.push(itemSpecial);
         }
-        menu.push(<Divider key={"divideSpecialWithSuperSpecial"} />);
+        menu.push(<Divider key={"divideSpecialWithSuperSpecial" + uuidv4()} />);
         for (const itemSuperSpecial of Array.from(listItemsSuperSpecialMode.values())) {
             menu.push(itemSuperSpecial);
         }
 
-        menu.push(<Divider key={"divideSuperSpecialWithStats"} />);
-        menu.push(<MenuItem key={`air-enable-leds-${this.props.id}`} onClick={async () => this.enableLEDs.bind(this)(true)}>
+        menu.push(<Divider key={"divideSuperSpecialWithStats" + uuidv4()} />);
+        menu.push(<MenuItem key={`air-enable-leds-${this.props.id}` + uuidv4()} onClick={async () => this.enableLEDs.bind(this)(true)}>
             <ListItemIcon><LightModeTwoTone /></ListItemIcon>
             <ListItemText>Activer les LEDs</ListItemText>
         </MenuItem>);
-        menu.push(<MenuItem key={`air-disable-leds-${this.props.id}`} onClick={async () => this.enableLEDs.bind(this)(false)}>
+        menu.push(<MenuItem key={`air-disable-leds-${this.props.id}` + uuidv4()} onClick={async () => this.enableLEDs.bind(this)(false)}>
             <ListItemIcon><NightlightTwoTone /></ListItemIcon>
             <ListItemText>Désactiver les LEDs</ListItemText>
         </MenuItem>);
 
-        menu.push(<Divider key={"divideLed"} />);
-        menu.push(<MenuItem key={`air-getstats-${this.props.id}`} onClick={() => this.displayStats.bind(this)()}>
+        menu.push(<Divider key={"divideLed" + uuidv4()} />);
+        menu.push(<MenuItem key={`air-getstats-${this.props.id}` + uuidv4()} onClick={() => this.displayStats.bind(this)()}>
             <ListItemIcon><BarChart /></ListItemIcon>
             <ListItemText>Voir les statistiques</ListItemText>
         </MenuItem>);
@@ -286,7 +281,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
 
     async enableLEDs(enabled: boolean) {
         try {
-            await getClient().post(`/air/daikin/${this.props.id}/leds`, { enabled: enabled });
+            await AirApiClient.getInstance().setDaikinLeds(this.props.id, enabled);
 
             this.closeMenu();
         } catch (error: any) {
@@ -382,7 +377,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                         <div style={{"width": "100%", "height": "50%"}}>
                             {this.state.isStatsOpen && <Chart
                                 id={`daily-stats-${this.props.id}`}
-                                key={`daily-stats-${this.props.id}`}
+                                key={`daily-stats-${this.props.id}` + uuidv4()}
                                 options={{
                                     data: dailyStats,
                                     primaryAxis,
@@ -393,7 +388,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                         <div style={{"width": "100%", "height": "50%"}}>
                             {this.state.isStatsOpen && <Chart
                                 id={`monthly-stats-${this.props.id}`}
-                                key={`monthly-stats-${this.props.id}`}
+                                key={`monthly-stats-${this.props.id}` + uuidv4()}
                                 options={{
                                     data: monthlyStats,
                                     primaryAxis,
@@ -502,10 +497,9 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }}>
+            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }} className={this.renderError()}>
                 {this.renderMenu(this.getPossibleActions())}
                 {this.renderInformationModal()}
-                {this.renderBackdrop()}
                 <Modal
                     open={this.state.isStatsOpen}
                     onClose={this.onStatsClose.bind(this)}
@@ -527,7 +521,7 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
                                 }
                                 <IconButton
                                     size="small"
-                                    id={"air-component-" + this.props.id}
+                                    id={"clients-component-" + this.props.id}
                                     onClick={(event) => { this.openMenu.bind(this)(event) }}
                                     aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
                                     aria-haspopup="true"
@@ -620,4 +614,4 @@ class AirComponent extends AbstractDevice<IAirComponentProps, IAirComponentState
     }
 }
 
-export default AirComponent;
+export default AirDaikinComponent;

@@ -1,23 +1,23 @@
 import {Component} from "react";
-import getClient from "../../api-client";
-import VideoProjectorComponent from "./VideoProjectorComponent";
-import {Box, Stack} from "@mui/material";
+import VideoProjectorViewsonicComponent from "./VideoProjectorViewsonicComponent";
+import {Stack} from "@mui/material";
+import VideoProjectorApiClient from "../../api-client/clients/VideoProjectorApiClient";
 
 interface IDevicesProps {}
 interface IDevicesState {
-    devices: any[]
+    viewsonicDevices: any[]
 }
 
 class CleanContainer extends Component<IDevicesProps, IDevicesState> {
     state = {
-        devices: []
+        viewsonicDevices: []
     }
 
     async componentDidMount() {
         try {
-            const { data } = await getClient().get("/video-projector/viewsonic");
+            const { data } = await VideoProjectorApiClient.getInstance().allViewsonics();
             this.setState({
-                devices: data
+                viewsonicDevices: data
             });
         } catch(error) {
             console.error(error);
@@ -27,7 +27,7 @@ class CleanContainer extends Component<IDevicesProps, IDevicesState> {
     render() {
         return (
             <Stack direction="row">
-                {this.state.devices.map((device: any) => <VideoProjectorComponent id={device._id} name={device.name} path={device.serialPortPath} key={device._id} />)}
+                {this.state.viewsonicDevices.map((device: any) => <VideoProjectorViewsonicComponent key={device._id} id={device._id} name={device.name} path={device.serialPortPath} />)}
             </Stack>
         )
     }

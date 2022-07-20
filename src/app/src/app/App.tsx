@@ -1,9 +1,10 @@
 import './App.css';
-import {Container, Snackbar} from "@mui/material";
+import {Container} from "@mui/material";
 import Menu from "../menu/Menu";
 import React, {Component} from "react";
 
 import Devices from "../devices/Devices";
+import Toasts from "../toasts/Toasts";
 
 interface IAppProps {}
 
@@ -37,39 +38,14 @@ class App extends Component<IAppProps, IAppState> {
         $metaResponsive.content = "initial-scale=1, width=device-width";
     }
 
-    setSnackOpen(opened: boolean) {
-        this.setState({
-            snackOpen: opened
-        });
-    }
-
-    setSnackMessage(message: string) {
-        this.setState({
-            snackMessage: message
-        });
-    }
-
-    handleSnackClose(event: React.SyntheticEvent | Event, reason?: string) {
-        if (reason === 'clickaway') {
-            return;
-        }
-
-        this.setSnackOpen(false);
-    };
-
     render() {
       return (
           <div className="App">
+              <Toasts />
               <Menu />
               <Container maxWidth="md">
                   <Devices />
               </Container>
-              <Snackbar
-                  open={this.state.snackOpen}
-                  autoHideDuration={6000}
-                  onClose={this.handleSnackClose.bind(this)}
-                  message={this.state.snackMessage}
-              />
           </div>
       );
     }

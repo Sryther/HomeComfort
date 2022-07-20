@@ -1,28 +1,32 @@
 import React from "react";
-import getClient from "../../api-client";
 import {
     Card,
     Box,
     IconButton, Tooltip, Typography, CardContent,
 } from "@mui/material";
 import {ArrowCircleDown, ArrowCircleUp, MoreVert} from "@mui/icons-material";
-import AbstractDevice, {IAbstractDeviceState} from "../abstract-device/AbstractDevice";
-import {GoScreenFull} from "react-icons/all";
+import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../abstract-device/AbstractDevice";
+import {GoScreenFull} from "react-icons/go";
 import _ from "lodash";
+import ProjectionScreenApiClient from "../../api-client/clients/ProjectionScreenApiClient";
 
-interface IProjectionScreenComponentProps {
+interface IProjectionScreenLumeneComponentProps extends IAbstractDeviceProps {
     id: string,
     name: string,
     path: string
 }
 
-interface IProjectionScreenState extends IAbstractDeviceState {}
+interface IProjectionScreenLumeneState extends IAbstractDeviceState {}
 
-class ProjectionScreenComponent extends AbstractDevice<IProjectionScreenComponentProps, IProjectionScreenState> {
+class ProjectionScreenLumeneComponent extends AbstractDevice<IProjectionScreenLumeneComponentProps, IProjectionScreenLumeneState> {
     async getDeviceInformation(): Promise<any> {
         try {
-            return await getClient().get(`/projection-screen/lumene/${this.props.id}`);
+            return await ProjectionScreenApiClient.getInstance().getLumene(this.props.id);
         } catch (error: any) {
+            this.setState({
+                hasRisenAnError: true
+            });
+
             console.error(error);
             return null;
         }
@@ -30,7 +34,7 @@ class ProjectionScreenComponent extends AbstractDevice<IProjectionScreenComponen
 
     async updateDeviceInformation(data: any): Promise<any> {
         try {
-            return await getClient().put(`/projection-screen/lumene/${this.props.id}`, data);
+            return await ProjectionScreenApiClient.getInstance().updateLumene(this.props.id, data);
         } catch (error: any) {
             console.error(error);
             return null;
@@ -46,26 +50,32 @@ class ProjectionScreenComponent extends AbstractDevice<IProjectionScreenComponen
             this.setState({
                 isLoading: true
             });
-            await getClient().post(`/projection-screen/lumene/${this.props.id}/up`);
+            await ProjectionScreenApiClient.getInstance().upLumene(this.props.id);
             this.setState({
                 isLoading: false
             });
         } catch(error) {
+            this.setState({
+                hasRisenAnError: true
+            });
             console.error(error);
         }
     }
 
     async down() {
         try {
-            await getClient().post(`/projection-screen/lumene/${this.props.id}/down`);
+            await ProjectionScreenApiClient.getInstance().downLumene(this.props.id);
         } catch(error) {
+            this.setState({
+                hasRisenAnError: true
+            });
             console.error(error);
         }
     }
 
     render() {
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }}>
+            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }} className={this.renderError()}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
@@ -112,4 +122,4 @@ class ProjectionScreenComponent extends AbstractDevice<IProjectionScreenComponen
     }
 }
 
-export default ProjectionScreenComponent;
+export default ProjectionScreenLumeneComponent;

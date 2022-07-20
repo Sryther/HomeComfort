@@ -12,14 +12,15 @@ class Menu extends Component<IMenuProps, IMenuState> {
         event.preventDefault();
     }
 
-    render () {
+    render() {
+        const Bubble = BurgerMenu.bubble;
         return (
-            <BurgerMenu.bubble customBurgerIcon={<img className={"logo"} src={logo}  alt={"logo"}/>}>
+            <Bubble customBurgerIcon={<img className={"logo"} src={logo}  alt={"logo"}/>}>
                 <a id="home" className="menu-item" href="/">Accueil</a>
                 <a id="devices" className="menu-item" href="/">Tous les équipements</a>
                 <a id="scenes" className="menu-item" href="/">Scènes</a>
                 <a id="schedules" className="menu-item" href="/">Programmes</a>
-            </BurgerMenu.bubble>
+            </Bubble>
         );
     }
 }

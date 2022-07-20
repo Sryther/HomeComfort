@@ -15,19 +15,25 @@ import * as uuid from "uuid";
 import _ from "lodash";
 import {Edit} from "@mui/icons-material";
 
+import './AbstractDevice.css';
+
 export interface IAbstractDeviceState {
     isMenuOpen: boolean,
     isLoading: boolean,
     isDeviceInformationModalOpen: boolean,
     isBackdropOpen: boolean,
-    deviceInformation: string
+    deviceInformation: string,
+    isRefreshDataRunning: boolean,
+    hasRisenAnError: boolean
 }
 
-abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> extends React.Component<IProps, IState> {
+export interface IAbstractDeviceProps {
+    itemDefinitionName?: string
+}
+
+abstract class AbstractDevice<IProps extends IAbstractDeviceProps, IState extends IAbstractDeviceState> extends React.Component<IProps, IState> {
     menuAnchorEl: any;
     refreshDataHandle?: NodeJS.Timer;
-    isRefreshDataRunning: boolean = false;
-
     updateDeviceInformationItem: JSX.Element;
 
     state: any = {
@@ -35,7 +41,9 @@ abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> exten
         isLoading: false,
         isDeviceInformationModalOpen: false,
         isBackdropOpen: false,
-        deviceInformation: ""
+        deviceInformation: "",
+        isRefreshDataRunning: false,
+        hasRaisenAnError: false
     };
 
     protected constructor(props: any) {
@@ -44,15 +52,45 @@ abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> exten
         this.updateDeviceInformationItem = (
             <MenuItem key={uuid.v4()} onClick={async () => this.openDeviceInformationModal.bind(this)()}>
                 <ListItemIcon><Edit /></ListItemIcon>
-                <ListItemText>Editer l'équipement</ListItemText>
+                <ListItemText>{this.props.itemDefinitionName || "Editer l'équipement"}</ListItemText>
             </MenuItem>
         );
     }
 
+    async internalRefreshData() {
+        if (this.state.hasRisenAnError || this.state.isRefreshDataRunning) {
+            if (this.refreshDataHandle) {
+                clearTimeout(this.refreshDataHandle);
+            }
+
+            return Promise.resolve();
+        }
+
+        return this.refreshData.bind(this)()
+            .then((result: any) => {
+                this.setState({
+                    isRefreshDataRunning: false
+                });
+                return Promise.resolve(result);
+            })
+            .catch((e: any) => {
+                this.setState({
+                    isRefreshDataRunning: false,
+                    hasRisenAnError: true
+                });
+
+                if (this.refreshDataHandle) {
+                    clearTimeout(this.refreshDataHandle);
+                }
+
+                return Promise.reject(e);
+            });
+    }
+
     async componentDidMount() {
         try {
-            await this.refreshData();
-            this.refreshDataHandle = setInterval(this.refreshData.bind(this), 5000);
+            await this.internalRefreshData();
+            this.refreshDataHandle = setInterval(this.internalRefreshData.bind(this), 5000);
         } catch(error) {
             console.error(error);
         }
@@ -93,6 +131,10 @@ abstract class AbstractDevice<IProps, IState extends IAbstractDeviceState> exten
 
     closeBackdrop(): void {
         this.setState({ isBackdropOpen: false });
+    }
+
+    renderError(): string {
+        return this.state.hasRisenAnError ? "error" : "";
     }
 
     renderMenu(items: Array<JSX.Element> = []): JSX.Element {

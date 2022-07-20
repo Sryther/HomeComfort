@@ -1,6 +1,5 @@
 import React from "react";
 import _ from "lodash";
-import getClient from "../../api-client";
 import {
     Card,
     Box,
@@ -10,23 +9,24 @@ import {
     CircularProgress, Tooltip, Icon
 } from "@mui/material";
 import {Lightbulb, MoreVert, PowerSettingsNew} from "@mui/icons-material";
-import AbstractDevice, {IAbstractDeviceState} from "../abstract-device/AbstractDevice";
-import {FcVideoProjector} from "react-icons/all";
+import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../abstract-device/AbstractDevice";
+import {FcVideoProjector} from "react-icons/fc";
+import VideoProjectorApiClient from "../../api-client/clients/VideoProjectorApiClient";
 
-interface IEndpointComponentProps {
+interface IVideoProjectorViewsonicComponentProps extends IAbstractDeviceProps {
     id: string,
     name: string,
     path: string
 }
 
-interface IEndpointComponentState extends IAbstractDeviceState {
+interface IVideoProjectorViewsonicComponentState extends IAbstractDeviceState {
     power: boolean
 }
 
-class VideoProjectorComponent extends AbstractDevice<IEndpointComponentProps, IEndpointComponentState> {
+class VideoProjectorViewsonicComponent extends AbstractDevice<IVideoProjectorViewsonicComponentProps, IVideoProjectorViewsonicComponentState> {
     async getDeviceInformation(): Promise<any> {
         try {
-            return await getClient().get(`/video-projector/viewsonic/${this.props.id}`);
+            return await VideoProjectorApiClient.getInstance().getViewsonic(this.props.id);
         } catch (error: any) {
             console.error(error);
             return null;
@@ -35,7 +35,7 @@ class VideoProjectorComponent extends AbstractDevice<IEndpointComponentProps, IE
 
     async updateDeviceInformation(data: any): Promise<any> {
         try {
-            return await getClient().put(`/video-projector/viewsonic/${this.props.id}`, data);
+            return await VideoProjectorApiClient.getInstance().updateViewsonic(this.props.id, data);
         } catch (error: any) {
             console.error(error);
             return null;
@@ -44,16 +44,17 @@ class VideoProjectorComponent extends AbstractDevice<IEndpointComponentProps, IE
 
     async refreshData() {
         try {
-            if (this.isRefreshDataRunning) return Promise.resolve();
-            this.isRefreshDataRunning = true;
-            const { data } = await getClient().get(`/video-projector/viewsonic/${this.props.id}/state`);
-            console.log(data)
-            this.isRefreshDataRunning = false;
+            if (this.state.hasRaisenANetworkError || this.state.isRefreshDataRunning) return Promise.resolve();
+
+            const { data } = await VideoProjectorApiClient.getInstance().getViewsonicState(this.props.id);
             this.setState({
                 power: data === "ON"
             });
         } catch (e: any) {
-            // TODO
+            this.setState({
+                power: false
+            });
+            return Promise.reject(e);
         }
     }
 
@@ -62,17 +63,14 @@ class VideoProjectorComponent extends AbstractDevice<IEndpointComponentProps, IE
             this.setState({
                 isLoading: true
             });
-            await getClient().post(`/video-projector/viewsonic/${this.props.id}/power-on`);
-            await this.refreshData();
-            this.setState({
-                isLoading: false
-            });
+            await VideoProjectorApiClient.getInstance().powerOnViewsonic(this.props.id);
         } catch(error) {
             console.error(error);
-            this.setState({
-                isLoading: false
-            });
         }
+
+        this.setState({
+            isLoading: false
+        });
     }
 
     async powerOff() {
@@ -80,17 +78,14 @@ class VideoProjectorComponent extends AbstractDevice<IEndpointComponentProps, IE
             this.setState({
                 isLoading: true
             });
-            await getClient().post(`/video-projector/viewsonic/${this.props.id}/power-off`);
-            await this.refreshData();
-            this.setState({
-                isLoading: false
-            });
+            await VideoProjectorApiClient.getInstance().powerOffViewsonic(this.props.id);
         } catch(error) {
             console.error(error);
-            this.setState({
-                isLoading: false
-            });
         }
+
+        this.setState({
+            isLoading: false
+        });
     }
 
     render() {
@@ -139,7 +134,7 @@ class VideoProjectorComponent extends AbstractDevice<IEndpointComponentProps, IE
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
+            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }} className={this.renderError()}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
@@ -180,4 +175,4 @@ class VideoProjectorComponent extends AbstractDevice<IEndpointComponentProps, IE
     }
 }
 
-export default VideoProjectorComponent;
+export default VideoProjectorViewsonicComponent;

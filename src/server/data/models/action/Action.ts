@@ -1,7 +1,7 @@
-import {Schema} from "mongoose";
+import {Document, model, Schema} from "mongoose";
 import { v4 as uuidv4 } from 'uuid';
 
-export interface ActionDocument {
+export interface ActionDocument extends Document {
     deviceType?: string,
     deviceId: string,
     description?: string,
@@ -12,7 +12,7 @@ export interface ActionDocument {
     _id?: string
 }
 
-const ActionSchema = new Schema<ActionDocument>({
+export const ActionSchema = new Schema<ActionDocument>({
     deviceType: {
         type: String,
         required: false,
@@ -52,4 +52,6 @@ const ActionSchema = new Schema<ActionDocument>({
     }
 });
 
-export default ActionSchema;
+const Action = model<ActionDocument>('Action', ActionSchema);
+
+export default Action;

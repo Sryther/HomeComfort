@@ -1,23 +1,23 @@
 import {Component} from "react";
-import getClient from "../../api-client";
-import {Box, Stack} from "@mui/material";
-import ProjectionScreenComponent from "./ProjectionScreenComponent";
+import {Stack} from "@mui/material";
+import ProjectionScreenLumeneComponent from "./ProjectionScreenLumeneComponent";
+import ProjectionScreenApiClient from "../../api-client/clients/ProjectionScreenApiClient";
 
 interface IDevicesProps {}
 interface IDevicesState {
-    devices: any[]
+    lumeneDevices: any[]
 }
 
 class ProjectionScreenContainer extends Component<IDevicesProps, IDevicesState> {
     state = {
-        devices: []
+        lumeneDevices: []
     }
 
     async componentDidMount() {
         try {
-            const { data } = await getClient().get("/projection-screen/lumene");
+            const { data } = await ProjectionScreenApiClient.getInstance().allLumenes();
             this.setState({
-                devices: data
+                lumeneDevices: data
             });
         } catch(error) {
             console.error(error);
@@ -27,7 +27,7 @@ class ProjectionScreenContainer extends Component<IDevicesProps, IDevicesState> 
     render() {
         return (
             <Stack direction="row">
-                {this.state.devices.map((device: any) => <ProjectionScreenComponent id={device._id} name={device.name} path={device.serialPortPath} key={device._id} />)}
+                {this.state.lumeneDevices.map((device: any) => <ProjectionScreenLumeneComponent id={device._id} name={device.name} path={device.serialPortPath} key={device._id} />)}
             </Stack>
         )
     }
