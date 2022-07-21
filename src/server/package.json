@@ -23,6 +23,7 @@
     "is-mac-address": "^1.0.4",
     "lodash": "^4.17.21",
     "miio": "^0.15.6",
+    "moment": "^2.29.4",
     "mongoose": "^6.1.7",
     "morgan": "^1.10.0",
     "node-gzip": "^1.1.2",
