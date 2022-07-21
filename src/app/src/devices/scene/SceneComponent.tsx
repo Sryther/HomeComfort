@@ -97,7 +97,7 @@ class SceneComponent extends AbstractDevice<ISceneComponentProps, ISceneComponen
                 isLoading: true
             });
 
-            await SceneApiClient.getInstance().run(`/scene/${this.props.id}`);
+            await SceneApiClient.getInstance().run(`/${this.props.id}`);
 
             this.setState({
                 isLoading: false
