@@ -31,7 +31,8 @@
   },
   "scripts": {
     "start": "node_modules/.bin/react-scripts start",
-    "build": "node_modules/.bin/react-scripts build"
+    "build": "node_modules/.bin/react-scripts build",
+    "compile": "tsc"
   },
   "eslintConfig": {
     "extends": [

@@ -1,6 +1,8 @@
 import * as express from "express";
-import {Request, Response, NextFunction} from "express";
+import {Request, Response, NextFunction, Router} from "express";
 import {Model as MongooseModel, Types} from "mongoose";
+import _ from "lodash";
+import ObjectIdVerifier from "./ObjectIdVerifier";
 
 interface ICRUDRouting {
     get (req: Request, res: Response, next: NextFunction): any;
@@ -29,11 +31,7 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
 
     public async get(req: Request, res: Response, next: NextFunction): Promise<any> {
         try {
-            try {
-                new Types.ObjectId(req.params.id);
-            } catch (error) {
-                return res.status(400).send("Not an ObjectId");
-            }
+            if (!_.isNil(ObjectIdVerifier(["id"], req, res, next))) return;
 
             const item = await this.Model.findById(req.params.id);
 
@@ -61,11 +59,7 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
 
     public async update (req: Request, res: Response, next: NextFunction): Promise<any> {
         try {
-            try {
-                new Types.ObjectId(req.params.id);
-            } catch (error) {
-                return res.status(400).send("Not an ObjectId");
-            }
+            if (!_.isNil(ObjectIdVerifier(["id"], req, res, next))) return;
 
             const item = await this.Model.findById(req.params.id);
 
@@ -88,11 +82,7 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
 
     public async remove (req: Request, res: Response, next: NextFunction): Promise<any> {
         try {
-            try {
-                new Types.ObjectId(req.params.id);
-            } catch (error) {
-                return res.status(400).send("Not an ObjectId");
-            }
+            if (!_.isNil(ObjectIdVerifier(["id"], req, res, next))) return;
 
             const item = await this.Model.findById(req.params.id);
 
@@ -109,9 +99,7 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
     };
 }
 
-const createRouter = (crudRouter: CRUDRouter<typeof MongooseModel>) => {
-    const router = express.Router();
-
+const createRouter = (crudRouter: CRUDRouter<typeof MongooseModel>, router: Router = express.Router()) => {
     router.get('/', crudRouter.all.bind(crudRouter));
     router.get('/:id', crudRouter.get.bind(crudRouter));
     router.post('/', crudRouter.create.bind(crudRouter));

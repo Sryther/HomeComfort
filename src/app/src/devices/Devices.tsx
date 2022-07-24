@@ -6,6 +6,7 @@ import ProjectionScreenContainer from "./projection-screen/ProjectionScreenConta
 import VideoProjectorContainer from "./video-projector/VideoProjectorContainer";
 import SceneContainer from "./scene/SceneContainer";
 import {Stack} from "@mui/material";
+import HueContainer from "./light/hue/HueContainer";
 
 interface IDevicesProps {}
 interface IDevicesState {}
@@ -15,13 +16,14 @@ class Devices extends Component<IDevicesProps, IDevicesState> {
         return (
             <Stack spacing={2}>
                 <AirContainer key={"airContainer"} />
-                <CleaningContainer key={"cleanContainer"} />
+                <HueContainer key={"hueContainer"} />
                 <Stack direction="row" key={"videoContainers"}>
                     <NetworkContainer key={"endpointContainer"} />
                     <ProjectionScreenContainer key={"projectionScreenContainer"} />
                     <VideoProjectorContainer key={"videoProjectorContainer"} />
                 </Stack>
                 <SceneContainer key={"scenesContainer"} />
+                <CleaningContainer key={"cleanContainer"} />
             </Stack>
         );
     }
