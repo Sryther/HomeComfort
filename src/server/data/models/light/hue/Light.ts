@@ -21,7 +21,7 @@ const LightSchema = new Schema<LightDocument>({
         required: false
     },
     bridge: {
-        type: Types.ObjectId,
+        type: Schema.Types.ObjectId,
         required: true
     }
 });
