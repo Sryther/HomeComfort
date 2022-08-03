@@ -8,6 +8,8 @@ import ObjectIdVerifier from "../../../../lib/api/ObjectIdVerifier";
 const appName = 'node-hue-api';
 const deviceName = 'helix';
 
+type LightsType = model.Light | model.Luminaire | model.Lightsource;
+
 async function searchBridges() {
     return await discovery.nupnpSearch();
 }
@@ -59,7 +61,7 @@ async function discoverBridge(req: Request, res: Response, next: NextFunction) {
             bridge.name = bridgeConfig.name;
             await bridge.save();
 
-            const lights = await authenticatedApi.lights.getAll();
+            const lights: LightsType[] = await authenticatedApi.lights.getAll();
             const foundLights = [];
             for (const light of lights) {
                 const lightsKnown = await Light.find({idHue: light.id});
@@ -68,7 +70,8 @@ async function discoverBridge(req: Request, res: Response, next: NextFunction) {
                         idHue: light.id,
                         name: light.name,
                         state: light.state,
-                        bridge: bridge._id
+                        bridge: bridge._id,
+                        productname: light.getAttributeValue('productname')
                     });
                     foundLights.push(createdLight);
                 } else {
@@ -160,8 +163,9 @@ async function getLightState(req: Request, res: Response, next: NextFunction) {
     if (bridge && light) {
         try {
             const authenticatedApi = await api.createLocal(bridge.ip).connect(bridge.user);
-            const state: any = await authenticatedApi.lights.getLight(light.idHue);
-            return res.send(state.data);
+            const lightInformation = await authenticatedApi.lights.getLightState(light.idHue);
+
+            return res.send(lightInformation);
         } catch (error: any) {
             console.error(`Couldn't get state of light ${light.name} (${light.idHue}) of bridge ${bridge.name}`, error);
             return res.status(500).send(error.message);
@@ -181,10 +185,24 @@ async function setLightState(req: Request, res: Response, next: NextFunction) {
         const authenticatedApi = await api.createLocal(bridge.ip).connect(bridge.user);
 
         const state = new model.LightState();
-        if (req.body.state === "on") {
-            state.on();
-        } else {
-            state.off();
+        const power: string = req.body.power;
+        const brightness: number = req.body.brightness;
+        const color: { hue: number, saturation: number, brightness: number } = req.body.color;
+
+        if (!_.isNil(power)) {
+            if (power === "on") {
+                state.on();
+            } else if (power === "off") {
+                state.off();
+            }
+        }
+
+        if (!_.isNil(color)) {
+            state.hsl(color.hue, color.saturation, color.brightness);
+        }
+
+        if (!_.isNil(brightness)) {
+            state.brightness(brightness);
         }
 
         try {

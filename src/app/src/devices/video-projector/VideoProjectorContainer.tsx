@@ -26,7 +26,7 @@ class CleanContainer extends Component<IDevicesProps, IDevicesState> {
 
     render() {
         return (
-            <Stack direction="row">
+            <Stack direction="row" sx={{ width: '100%', display: 'flex' }}>
                 {this.state.viewsonicDevices.map((device: any) => <VideoProjectorViewsonicComponent key={device._id} id={device._id} name={device.name} path={device.serialPortPath} />)}
             </Stack>
         )

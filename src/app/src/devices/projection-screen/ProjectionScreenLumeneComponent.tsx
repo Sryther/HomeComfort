@@ -1,8 +1,10 @@
 import React from "react";
 import {
     Card,
-    Box,
-    IconButton, Tooltip, Typography, CardContent,
+    IconButton,
+    Tooltip,
+    CardActions,
+    CardHeader, Box, CardContent
 } from "@mui/material";
 import {ArrowCircleDown, ArrowCircleUp, MoreVert} from "@mui/icons-material";
 import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../abstract-device/AbstractDevice";
@@ -75,36 +77,32 @@ class ProjectionScreenLumeneComponent extends AbstractDevice<IProjectionScreenLu
 
     render() {
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }} className={this.renderError()}>
+            <Card sx={{ m: 0.5, 'minWidth': '30%' }}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
-                    <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
-                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                            <Typography component="div" variant="h5">
-                                <GoScreenFull /> {this.props.name}
-                            </Typography>
-                            <Box sx={{ marginLeft: "auto" }}>
-                                <IconButton
-                                    size="small"
-                                    id={"projection-screen-component-" + this.props.id}
-                                    onClick={(event) => { this.openMenu.bind(this)(event) }}
-                                    aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
-                                    aria-haspopup="true"
-                                    aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
-                                >
-                                    <MoreVert />
-                                </IconButton>
-                            </Box>
-                        </Box>
-                        <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }}>
-                            <Box sx={{ display: 'flex' }}>
-                                {this.props.path}
-                            </Box>
-                        </Typography>
-                    </CardContent>
-                    <Box>
+                <CardHeader
+                    avatar={<GoScreenFull />}
+                    title={this.props.name}
+                    subheader={this.props.path}
+                    action={
+                        <IconButton
+                            size="small"
+                            id={"projection-screen-component-" + this.props.id}
+                            onClick={(event) => { this.openMenu.bind(this)(event) }}
+                            aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
+                            aria-haspopup="true"
+                            aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
+                        >
+                            <MoreVert />
+                        </IconButton>
+                    }
+                />
+                <CardContent>
+                    {this.renderError()}
+                </CardContent>
+                <CardActions sx={{ width: '100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Tooltip title="Descendre">
                             <IconButton color="primary" aria-label="down" onClick={() => { this.down.bind(this)() }}>
                                 <ArrowCircleDown />
@@ -116,7 +114,7 @@ class ProjectionScreenLumeneComponent extends AbstractDevice<IProjectionScreenLu
                             </IconButton>
                         </Tooltip>
                     </Box>
-                </Box>
+                </CardActions>
             </Card>
         )
     }

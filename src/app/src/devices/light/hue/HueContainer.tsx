@@ -26,7 +26,7 @@ class HueContainer extends Component<IDevicesProps, IDevicesState> {
 
     render() {
         return (
-            <Stack direction="row">
+            <Stack direction="row" sx={{ width: '100%', display: 'flex' }}>
                 {this.state.hueBridges.map((device: any) => <BridgeComponent key={device._id} id={device._id} name={device.name} />)}
             </Stack>
         )

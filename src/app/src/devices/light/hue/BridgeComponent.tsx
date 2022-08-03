@@ -29,8 +29,8 @@ class BridgeComponent extends Component<IDevicesProps, IDevicesState> {
 
     render() {
         return (
-            <Stack direction="row">
-                {this.state.hueLights.map((device: any) => <LightComponent key={device._id} id={device._id} idBridge={device.bridge} name={device.name} />)}
+            <Stack direction="row" sx={{ width: '100%', display: 'flex' }}>
+                {this.state.hueLights.map((device: any) => <LightComponent key={device._id} id={device._id} idBridge={device.bridge} name={device.name} productname={device.productname} />)}
             </Stack>
         )
     }

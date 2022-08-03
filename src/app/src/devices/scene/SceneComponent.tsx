@@ -7,10 +7,14 @@ import {
     Typography,
     IconButton,
     Tooltip,
-    CircularProgress,
     ListItem,
-    ListItemText, List,
+    ListItemText,
+    List,
+    CardHeader,
+    CardActions,
+    Skeleton
 } from "@mui/material";
+import "./Scene.css";
 import {PlaylistPlay, MoreVert, PlayArrow} from "@mui/icons-material";
 import AbstractDevice, {IAbstractDeviceState, IAbstractDeviceProps} from "../abstract-device/AbstractDevice";
 import SceneApiClient from "../../api-client/clients/SceneApiClient";
@@ -128,49 +132,47 @@ class SceneComponent extends AbstractDevice<ISceneComponentProps, ISceneComponen
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }} className={this.renderError()}>
+            <Card sx={{ m: 0.5, 'minWidth': '30%' }}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
-                    <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
-                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                            <Typography component="div" variant="h5">
-                                <PlaylistPlay /> {this.props.name}
-                            </Typography>
-                            <Box sx={{ marginLeft: "auto" }}>
-                                <IconButton
-                                    size="small"
-                                    id={"scene-component-" + this.props.id}
-                                    onClick={(event) => { this.openMenu.bind(this)(event) }}
-                                    aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
-                                    aria-haspopup="true"
-                                    aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
-                                >
-                                    <MoreVert />
-                                </IconButton>
-                            </Box>
-                        </Box>
-                        <Typography variant="subtitle1" color="text.secondary" component="div">
-                            <List dense={true}>
-                                {listActions}
-                            </List>
-                        </Typography>
-                    </CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
-                        {!_.isNil(this.state) && !this.state.isLoading ?
-                            <Tooltip title="Lancer">
-                                <IconButton size="small" color="primary" onClick={async () => {
-                                    await this.run.bind(this)()
-                                }}>
-                                    <PlayArrow />
-                                </IconButton>
-                            </Tooltip>
-                        :
-                            <CircularProgress size={16} color="inherit" />
-                        }
-                    </Box>
-                </Box>
+                <CardHeader
+                    avatar={<PlaylistPlay />}
+                    title={this.props.name}
+                    action={
+                        <IconButton
+                            size="small"
+                            id={"scene-component-" + this.props.id}
+                            onClick={(event) => { this.openMenu.bind(this)(event) }}
+                            aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
+                            aria-haspopup="true"
+                            aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
+                        >
+                            <MoreVert />
+                        </IconButton>
+                    }
+                />
+                <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
+                    {this.renderError()}
+                    <Typography variant="subtitle1" color="text.secondary" component="div">
+                        <List dense={true}>
+                            {listActions}
+                        </List>
+                    </Typography>
+                </CardContent>
+                <CardActions sx={{ width: '100%' }}>
+                    {!_.isNil(this.state) && !this.state.isLoading ?
+                        <Tooltip title="Lancer">
+                            <IconButton size="small" color="primary" onClick={async () => {
+                                await this.run.bind(this)()
+                            }}>
+                                <PlayArrow />
+                            </IconButton>
+                        </Tooltip>
+                    :
+                        <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '38px' }} />
+                    }
+                </CardActions>
             </Card>
         )
     }

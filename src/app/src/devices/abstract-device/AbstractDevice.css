@@ -1,9 +1,22 @@
-.error:after {
-    content: "";
+.MuiCard-root {
+    position: relative;
+    min-height: 12vw;
+    display: block;
+    flex-grow: 1;
+    flex-basis: 0;
+    max-width: 100%;
+}
+
+.MuiCardActions-root {
     position: absolute;
-    margin: -5px;
-    width: 10px;
-    height: 10px;
-    background-color: red;
-    border-radius: 50%;
+    bottom: 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    width: 100%;
+}
+
+.MuiCardHeader-title {
+    font-weight: bold !important;
 }

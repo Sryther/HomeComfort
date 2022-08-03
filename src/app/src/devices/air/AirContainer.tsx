@@ -26,7 +26,7 @@ class AirContainer extends Component<IDevicesProps, IDevicesState> {
 
     render() {
         return (
-            <Stack direction="row">
+            <Stack direction="row" sx={{ width: '100%', display: 'flex' }}>
                 {this.state.daikinDevices.map((device: any) => <AirDaikinComponent key={device._id} id={device._id} name={device.name} ip4={device.ip4} ip6={device.ip6} />)}
             </Stack>
         )

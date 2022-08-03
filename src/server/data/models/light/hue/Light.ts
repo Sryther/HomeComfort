@@ -4,7 +4,8 @@ export interface LightDocument extends Document {
     idHue: string,
     name: string,
     state?: any,
-    bridge: Types.ObjectId
+    bridge: Types.ObjectId,
+    productname?: string
 }
 
 const LightSchema = new Schema<LightDocument>({
@@ -23,6 +24,10 @@ const LightSchema = new Schema<LightDocument>({
     bridge: {
         type: Schema.Types.ObjectId,
         required: true
+    },
+    productname: {
+        type: String,
+        required: false
     }
 });
 

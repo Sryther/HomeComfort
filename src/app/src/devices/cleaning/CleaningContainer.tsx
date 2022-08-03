@@ -26,7 +26,7 @@ class CleaningContainer extends Component<IDevicesProps, IDevicesState> {
 
     render() {
         return (
-            <Stack direction="row">
+            <Stack direction="row" sx={{ width: '100%', display: 'flex' }}>
                 {this.state.roborockDevices.map((device: any) => <CleaningRoborockComponent key={device._id} id={device._id} name={device.name} ip={device.ip} />)}
             </Stack>
         )

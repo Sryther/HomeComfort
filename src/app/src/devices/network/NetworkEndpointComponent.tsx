@@ -2,14 +2,13 @@ import React from "react";
 import _ from "lodash";
 import {
     Card,
-    Box,
-    CardContent,
-    Typography,
     IconButton,
     Tooltip,
-    Icon, CircularProgress
+    CardHeader,
+    CardActions,
+    Skeleton, CardContent
 } from "@mui/material";
-import {Lightbulb, MoreVert, PowerSettingsNew} from "@mui/icons-material";
+import {MoreVert, PowerSettingsNew} from "@mui/icons-material";
 import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../abstract-device/AbstractDevice";
 import {FaNetworkWired} from "react-icons/fa";
 import NetworkApiClient from "../../api-client/clients/NetworkApiClient";
@@ -79,8 +78,7 @@ class NetworkEndpointComponent extends AbstractDevice<INetworkEndpointComponentP
     }
 
     render() {
-        let powerButton = <CircularProgress size={16} color="inherit" />;
-        let endpointState = <CircularProgress size={16} color="inherit" />;
+        let powerButton = <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '38px' }} />;
         let bgColor = "white";
 
         if (!_.isNil(this.state)) {
@@ -89,13 +87,6 @@ class NetworkEndpointComponent extends AbstractDevice<INetworkEndpointComponentP
                 powerButton = (
                     <Tooltip title="Allumé">
                         <PowerSettingsNew sx={{ color: 'green' }}/>
-                    </Tooltip>
-                );
-                endpointState = (
-                    <Tooltip title="Allumé">
-                        <Icon>
-                            <Lightbulb sx={{color: "orange" }} />
-                        </Icon>
                     </Tooltip>
                 );
             } else {
@@ -107,57 +98,41 @@ class NetworkEndpointComponent extends AbstractDevice<INetworkEndpointComponentP
                         </IconButton>
                     </Tooltip>
                 );
-                endpointState = (
-                    <Tooltip title="Eteint">
-                        <Icon>
-                            <Lightbulb sx={{color: "grey" }} />
-                        </Icon>
-                    </Tooltip>
-                );
             }
 
             if (this.state.isLoading) {
-                powerButton = <CircularProgress size={16} color="inherit" />;
+                powerButton = <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '38px' }} />;
             }
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }} className={this.renderError()}>
+            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
-                    <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
-                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                            <Typography component="div" variant="h5">
-                                <FaNetworkWired /> {this.props.name}
-                            </Typography>
-                            <Box sx={{ marginLeft: "auto" }}>
-                                <IconButton
-                                    size="small"
-                                    id={"endpoint-component-" + this.props.id}
-                                    onClick={(event) => { this.openMenu.bind(this)(event) }}
-                                    aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
-                                    aria-haspopup="true"
-                                    aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
-                                >
-                                    <MoreVert />
-                                </IconButton>
-                            </Box>
-                        </Box>
-                        <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }}>
-                            <Box sx={{ display: 'flex' }}>
-                                {this.props.ip}
-                            </Box>
-                            <Box sx={{ display: 'flex', m: 0.5, marginLeft: "auto" }}>
-                                {endpointState}
-                            </Box>
-                        </Typography>
-                    </CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
-                        {powerButton}
-                    </Box>
-                </Box>
+                <CardHeader
+                    avatar={<FaNetworkWired />}
+                    title={this.props.name}
+                    subheader={this.props.ip}
+                    action={
+                        <IconButton
+                            size="small"
+                            id={"endpoint-component-" + this.props.id}
+                            onClick={(event) => { this.openMenu.bind(this)(event) }}
+                            aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
+                            aria-haspopup="true"
+                            aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
+                        >
+                            <MoreVert />
+                        </IconButton>
+                    }
+                />
+                <CardContent>
+                    {this.renderError()}
+                </CardContent>
+                <CardActions sx={{ width: '100%', display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
+                    {powerButton}
+                </CardActions>
             </Card>
         )
     }

@@ -26,7 +26,7 @@ class ProjectionScreenContainer extends Component<IDevicesProps, IDevicesState> 
 
     render() {
         return (
-            <Stack direction="row">
+            <Stack direction="row" sx={{ width: '100%', display: 'flex' }}>
                 {this.state.lumeneDevices.map((device: any) => <ProjectionScreenLumeneComponent id={device._id} name={device.name} path={device.serialPortPath} key={device._id} />)}
             </Stack>
         )

@@ -106,12 +106,20 @@ class ApiClient {
 
 export abstract class AbstractClient {
     abstract baseUrl: string;
+    notificationsShown: string[] = [];
 
     /**
      * @throws {Error}
      */
     protected handleError(error: AxiosError, message: string) {
-        toast(`${message}`);
+        if (!this.notificationsShown.includes(message)) {
+            this.notificationsShown.push(message);
+            setTimeout(() => {
+                this.notificationsShown.slice(this.notificationsShown.indexOf(message), 1);
+            }, 60000); // 1 hour
+
+            toast(`${message}`);
+        }
     }
 }
 

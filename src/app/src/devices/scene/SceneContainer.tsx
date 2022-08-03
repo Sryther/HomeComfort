@@ -26,7 +26,7 @@ class CleanContainer extends Component<IDevicesProps, IDevicesState> {
 
     render() {
         return (
-            <Stack direction="row">
+            <Stack direction="row" sx={{ width: '100%', display: 'flex' }}>
                 {this.state.scenes.map((scene: any) => <SceneComponent key={scene._id} id={scene._id} name={scene.name} itemDefinitionName={"Editer la scène"} />)}
             </Stack>
         )

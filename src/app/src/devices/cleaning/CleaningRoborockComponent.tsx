@@ -3,10 +3,13 @@ import _ from "lodash";
 import {
     Card,
     Box,
-    CardContent,
     Typography,
-    IconButton,
-    CircularProgress, Tooltip, Icon, Skeleton
+    Tooltip,
+    Icon,
+    Skeleton,
+    CardHeader,
+    CardActions,
+    IconButton, CardContent
 } from "@mui/material";
 import {
     PlayArrow,
@@ -125,9 +128,9 @@ class CleaningRoborockComponent extends AbstractDevice<ICleaningRoborockComponen
     }
 
     render() {
-        let batteryLevelElem = <CircularProgress size={16} color="inherit" />;
+        let batteryLevelElem = <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '38px' }} />;
         let mainControlButtons = <div />;
-        let endpointState = <CircularProgress size={16} color="inherit" />;
+        let endpointState = <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '38px' }} />;
         let bgColor = "white";
 
         if (!_.isNil(this.state)) {
@@ -193,41 +196,41 @@ class CleaningRoborockComponent extends AbstractDevice<ICleaningRoborockComponen
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }} className={this.renderError()}>
+            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
-                    {this.renderInformationModal()}
-                    <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
-                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                            <Typography component="div" variant="h5">
-                                <GiVacuumCleaner /> {this.props.name}
-                            </Typography>
-                            <Box sx={{ marginLeft: "auto" }}>
-                                <IconButton
-                                    size="small"
-                                    id={"roborock-component-" + this.props.id}
-                                    onClick={(event) => { this.openMenu.bind(this)(event) }}
-                                    aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
-                                    aria-haspopup="true"
-                                    aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
-                                >
-                                    <MoreVert />
-                                </IconButton>
+                <CardHeader
+                    sx={{width: '100%'}}
+                    avatar={<GiVacuumCleaner />}
+                    title={this.props.name}
+                    subheader={ !_.isNil(this.state) ?
+                        <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }}>
+                            {batteryLevelElem}%
+                            <Box sx={{ display: 'flex', m: 0.5, marginLeft: "auto" }}>
+                                {endpointState}
                             </Box>
-                        </Box>
-                        { !_.isNil(this.state) ?
-                            <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }}>
-                                {batteryLevelElem}%
-                                <Box sx={{ display: 'flex', m: 0.5, marginLeft: "auto" }}>
-                                    {endpointState}
-                                </Box>
-                            </Typography>
+                        </Typography>
                         :
-                            <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '28px' }} />
-                        }
-                    </CardContent>
+                        <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '28px' }} />
+                    }
+                    action={
+                        <IconButton
+                            size="small"
+                            id={"roborock-component-" + this.props.id}
+                            onClick={(event) => { this.openMenu.bind(this)(event) }}
+                            aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
+                            aria-haspopup="true"
+                            aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
+                        >
+                            <MoreVert />
+                        </IconButton>
+                    }
+                />
+                <CardContent>
+                    {this.renderError()}
+                </CardContent>
+                <CardActions sx={{ width: '100%' }}>
                     { !_.isNil(this.state) ?
                         <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
                             {mainControlButtons}
@@ -235,8 +238,7 @@ class CleaningRoborockComponent extends AbstractDevice<ICleaningRoborockComponen
                         :
                         <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '54px', height: '54px' }} />
                     }
-
-                </Box>
+                </CardActions>
             </Card>
         )
     }

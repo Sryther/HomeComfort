@@ -1,5 +1,6 @@
 import React from "react";
 import {
+    Alert, AlertTitle,
     Backdrop,
     Box,
     Button,
@@ -58,11 +59,14 @@ abstract class AbstractDevice<IProps extends IAbstractDeviceProps, IState extend
     }
 
     async internalRefreshData() {
-        if (this.state.hasRisenAnError || this.state.isRefreshDataRunning) {
+        if (this.state.hasRisenAnError) {
             if (this.refreshDataHandle) {
                 clearTimeout(this.refreshDataHandle);
             }
 
+            return Promise.resolve();
+        }
+        if (this.state.isRefreshDataRunning) {
             return Promise.resolve();
         }
 
@@ -81,6 +85,14 @@ abstract class AbstractDevice<IProps extends IAbstractDeviceProps, IState extend
 
                 if (this.refreshDataHandle) {
                     clearTimeout(this.refreshDataHandle);
+
+                    setTimeout(() => {
+                        this.setState({
+                            hasRisenAnError: false
+                        });
+                        this.internalRefreshData.bind(this);
+                        this.refreshDataHandle = setInterval(this.internalRefreshData.bind(this), 5000);
+                    }, 115000);
                 }
 
                 return Promise.reject(e);
@@ -133,8 +145,13 @@ abstract class AbstractDevice<IProps extends IAbstractDeviceProps, IState extend
         this.setState({ isBackdropOpen: false });
     }
 
-    renderError(): string {
-        return this.state.hasRisenAnError ? "error" : "";
+    renderError(): JSX.Element | null {
+        return this.state.hasRisenAnError ? (
+            <Alert severity="error">
+                <AlertTitle>Oops</AlertTitle>
+                Une erreur est survenue !
+            </Alert>
+        ) : null;
     }
 
     renderMenu(items: Array<JSX.Element> = []): JSX.Element {
@@ -202,6 +219,7 @@ abstract class AbstractDevice<IProps extends IAbstractDeviceProps, IState extend
                     />
                     <Button onClick={async () => {
                         await this.updateDeviceInformation.bind(this)(deviceInformationNewValue);
+                        await this.refreshData.bind(this);
                         this.handleDeviceInformationCloseModal.bind(this)();
                     }}>
                         Sauver

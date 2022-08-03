@@ -14,10 +14,10 @@ interface IDevicesState {}
 class Devices extends Component<IDevicesProps, IDevicesState> {
     render () {
         return (
-            <Stack spacing={2}>
+            <Stack spacing={2} sx={{ display: 'flex' }}>
                 <AirContainer key={"airContainer"} />
                 <HueContainer key={"hueContainer"} />
-                <Stack direction="row" key={"videoContainers"}>
+                <Stack direction="row" key={"videoContainers"} sx={{ width: '100%', display: 'flex' }}>
                     <NetworkContainer key={"endpointContainer"} />
                     <ProjectionScreenContainer key={"projectionScreenContainer"} />
                     <VideoProjectorContainer key={"videoProjectorContainer"} />

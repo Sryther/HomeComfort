@@ -1,19 +1,40 @@
 import React from "react";
 import HueApiClient from "../../../api-client/clients/HueApiClient";
-import {Box, Card, CardContent, CircularProgress, Icon, IconButton, Tooltip, Typography} from "@mui/material";
+import './ColorPalette.css';
+import { HslColorPicker, HslColor } from "react-colorful";
+import {
+    Box,
+    Card,
+    CardActions, CardContent,
+    CardHeader,
+    IconButton,
+    Modal,
+    Skeleton,
+    Slider,
+    Stack,
+    Tooltip
+} from "@mui/material";
 import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../../abstract-device/AbstractDevice";
 import _ from "lodash";
-import {Lightbulb, MoreVert, PowerSettingsNew} from "@mui/icons-material";
-import {FaRegLightbulb} from "react-icons/fa";
+import {ColorLens, Light, LightMode, MoreVert, Nightlight} from "@mui/icons-material";
 
 interface LightComponentProps extends IAbstractDeviceProps {
     idBridge: string,
     id: string,
-    name: string
+    name: string,
+    productname: string
 }
 
 interface LightComponentState extends IAbstractDeviceState {
-    lightState?: any
+    lightState?: any,
+    brightness: number,
+    power: string,
+    color: {
+        hue: number,
+        saturation: number,
+        brightness: number
+    },
+    isPaletteOpen: boolean
 }
 
 class LightComponent extends AbstractDevice<LightComponentProps, LightComponentState> {
@@ -34,8 +55,16 @@ class LightComponent extends AbstractDevice<LightComponentProps, LightComponentS
         try {
             if (this.state.hasRaisenANetworkError || this.state.isRefreshDataRunning) return Promise.resolve();
             const { data } = await HueApiClient.getInstance().getLightState(this.props.idBridge, this.props.id);
+
             this.setState({
-                lightState: data
+                lightState: data,
+                power: data.on ? "on" : "off",
+                brightness: data.bri,
+                color: {
+                    hue: 0,
+                    saturation: 0,
+                    brightness: 0
+                }
             });
         } catch (e: any) {
             return Promise.reject(e);
@@ -46,119 +75,143 @@ class LightComponent extends AbstractDevice<LightComponentProps, LightComponentS
         return Promise.resolve(undefined);
     }
 
-    async powerOn() {
+    async setLightIntensity(event: Event, newValue: number | number[]) {
         try {
+            const brightness: number = _.isArray(newValue) ? newValue[0] : newValue;
+            const power = brightness > 0 ? "on" : "off";
+
+            await HueApiClient.getInstance().setStateLight(this.props.idBridge, this.props.id, { power: power, brightness: brightness === 0 ? 1 : brightness });
+
             this.setState({
-                isLoading: true
+                brightness: brightness,
+                power: power
             });
-            await HueApiClient.getInstance().setStateLight(this.props.idBridge, this.props.id, { state: "on" });
         } catch(error) {
             console.error(error);
         }
-
-        this.setState({
-            isLoading: false
-        });
     }
 
-    async powerOff() {
+    async setLightColor(newColor: HslColor): Promise<any> {
         try {
+            console.log(newColor)
+            const color = {
+                hue: Math.max(newColor.h, 0),
+                saturation: Math.max(newColor.s, 0),
+                brightness: Math.max(newColor.l, 0)
+            };
+
             this.setState({
-                isLoading: true
+                color
             });
-            await HueApiClient.getInstance().setStateLight(this.props.idBridge, this.props.id, { state: "off" });
+
+            await HueApiClient.getInstance().setStateLight(this.props.idBridge, this.props.id, { color });
         } catch(error) {
             console.error(error);
         }
+    }
 
-        this.setState({
-            isLoading: false
-        });
+    renderPaletteModal() {
+        if (!_.isNil(this.state.lightState)) {
+            return (
+                <Modal
+                    open={!_.isNil(this.state.isPaletteOpen) ? this.state.isPaletteOpen : false}
+                    onClose={() => {
+                        this.setState({ isPaletteOpen: false})
+                    }}
+                >
+                    <Box sx={{
+                        position: 'absolute' as 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        bgcolor: 'background.paper',
+                        boxShadow: 24,
+                        borderRadius: '5px',
+                        p: 4,
+                    }}>
+                        <section className="custom-pointers">
+                            <HslColorPicker
+                                color={{ h: this.state.color.hue, s: this.state.color.saturation, l: this.state.color.brightness }}
+                                onChange={this.setLightColor.bind(this)}
+                            />
+                        </section>
+                    </Box>
+                </Modal>
+            );
+        }
     }
 
     render() {
-        let powerButton = <CircularProgress size={16} color="inherit" />;
-        let lightState = <CircularProgress size={16} color="inherit" />;
+        let stateCommands = (
+            <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '38px' }} />
+        );
         let bgColor = "white";
 
         if (!_.isNil(this.state) && !_.isNil(this.state.lightState)) {
-            console.log(this.state)
-            if (this.state.lightState.state.on) {
-                bgColor = "#49fdba";
-                powerButton = (
-                    <Tooltip title="Eteindre">
-                        <IconButton size="small" color="primary" onClick={() => { this.powerOff.bind(this)() }}>
-                            <PowerSettingsNew sx={{ color: 'red' }} />
+            stateCommands = (
+                <Stack spacing={2} margin={2} direction="row" sx={{ mb: 1, width: '100%' }} alignItems="center">
+                    <Nightlight />
+                    <Slider
+                        aria-label="intensity"
+                        defaultValue={this.state.brightness}
+                        valueLabelDisplay="auto"
+                        min={0}
+                        max={100}
+                        onChange={_.debounce(this.setLightIntensity.bind(this), 500)}
+                    />
+                    <LightMode />
+                    <Tooltip title={"Définir une couleur"}>
+                        <IconButton
+                            size="small"
+                            id={"hue-light-component-palette-" + this.props.id}
+                            onClick={(event) => { this.setState({isPaletteOpen: true }) }}
+                        >
+                            <ColorLens />
                         </IconButton>
                     </Tooltip>
-                );
-                lightState = (
-                    <Tooltip title="Allumé">
-                        <Icon>
-                            <Lightbulb sx={{color: "orange" }} />
-                        </Icon>
-                    </Tooltip>
-                );
+                </Stack>
+            );
+            if (this.state.power === 'on') {
+                bgColor = "#49fdba";
             } else {
                 bgColor = "white";
-                powerButton = (
-                    <Tooltip title="Allumer">
-                        <IconButton size="small" color="primary" onClick={() => { this.powerOn.bind(this)() }}>
-                            <PowerSettingsNew />
-                        </IconButton>
-                    </Tooltip>
-                );
-                lightState = (
-                    <Tooltip title="Eteint">
-                        <Icon>
-                            <Lightbulb sx={{color: "grey" }} />
-                        </Icon>
-                    </Tooltip>
-                );
-            }
-
-            if (this.state.isLoading) {
-                powerButton = <CircularProgress size={16} color="inherit" />;
             }
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }} className={this.renderError()}>
+            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
-                    <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
-                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                            <Typography component="div" variant="h5">
-                                <FaRegLightbulb /> {this.props.name}
-                            </Typography>
-                            <Box sx={{ marginLeft: "auto" }}>
-                                <IconButton
-                                    size="small"
-                                    id={"hue-light-component-" + this.props.id}
-                                    onClick={(event) => { this.openMenu.bind(this)(event) }}
-                                    aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
-                                    aria-haspopup="true"
-                                    aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
-                                >
-                                    <MoreVert />
-                                </IconButton>
-                            </Box>
-                        </Box>
-                        <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }}>
-                            <Box sx={{ display: 'flex' }}>
-                                { !_.isNil(this.state) && !_.isNil(this.state.lightState) ? this.state.lightState.productname : "" }
-                            </Box>
-                            <Box sx={{ display: 'flex', m: 0.5, marginLeft: "auto" }}>
-                                {lightState}
-                            </Box>
-                        </Typography>
-                    </CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
-                        {powerButton}
+                {this.renderPaletteModal()}
+                <CardHeader
+                    sx={{width: '100%'}}
+                    avatar={
+                        <Light />
+                    }
+                    title={this.props.name}
+                    subheader={ this.props.productname }
+                    action={
+                        <IconButton
+                            size="small"
+                            id={"hue-light-component-" + this.props.id}
+                            onClick={(event) => { this.openMenu.bind(this)(event) }}
+                            aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
+                            aria-haspopup="true"
+                            aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
+                        >
+                            <MoreVert />
+                        </IconButton>
+                    }
+                />
+                <CardContent>
+                    {this.renderError()}
+                </CardContent>
+                <CardActions sx={{ width: '100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1, width: '100%' }}>
+                        {stateCommands}
                     </Box>
-                </Box>
+                </CardActions>
             </Card>
         )
     }

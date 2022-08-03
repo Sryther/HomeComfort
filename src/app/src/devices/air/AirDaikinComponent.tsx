@@ -15,7 +15,12 @@ import {
     List,
     ListItem,
     ListItemIcon,
-    ListItemText, Modal, Stack, Skeleton
+    ListItemText,
+    Modal,
+    Stack,
+    Skeleton,
+    CardHeader,
+    CardActions
 } from "@mui/material";
 import {
     Thermostat,
@@ -497,7 +502,7 @@ class AirDaikinComponent extends AbstractDevice<IAirDaikinComponentProps, IAirDa
         }
 
         return (
-            <Card sx={{ display: 'flex', m: 0.5, 'minWidth': '30%' }} className={this.renderError()}>
+            <Card sx={{ m: 0.5, 'minWidth': '30%' }}>
                 {this.renderMenu(this.getPossibleActions())}
                 {this.renderInformationModal()}
                 <Modal
@@ -506,91 +511,94 @@ class AirDaikinComponent extends AbstractDevice<IAirDaikinComponentProps, IAirDa
                 >
                     {this.renderStats.bind(this)()}
                 </Modal>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', width: '100%' }}>
-                    <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
-                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                            <Typography component="div" variant="h5">
-                                <Air /> {this.props.name}
-                            </Typography>
-
-                            <Box sx={{ marginLeft: "auto", display: "flex" }}>
-                                { !_.isNil(this.state) && !_.isNil(this.state.acControl) ?
-                                    <Switch sx={{ marginLeft: "auto" }} color="secondary" onClick={() => this.power.bind(this)(!this.state.acControl.power)} defaultChecked={this.state.acControl.power} />
+                <CardHeader
+                    sx={{ width: '100%' }}
+                    avatar={<Air />}
+                    title={this.props.name}
+                    subheader={this.props.ip4}
+                    action={
+                        <Box sx={{ display: 'flex' }}>
+                            { !_.isNil(this.state) && !_.isNil(this.state.acControl) ?
+                                <Switch color="secondary" onClick={() => this.power.bind(this)(!this.state.acControl.power)} defaultChecked={this.state.acControl.power} />
                                 :
-                                    <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '58px', height: '38px' }} />
-                                }
-                                <IconButton
-                                    size="small"
-                                    id={"clients-component-" + this.props.id}
-                                    onClick={(event) => { this.openMenu.bind(this)(event) }}
-                                    aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
-                                    aria-haspopup="true"
-                                    aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
-                                >
-                                    <MoreVert />
-                                </IconButton>
-                            </Box>
-                        </Box>
-                        <Popover
-                            open={this.state.isAdditionalInformationOpen}
-                            anchorEl={this.state.additionalInformationAnchorEl}
-                            onClose={this.handleAdditionalInformationPopoverClose.bind(this)}
-                            anchorOrigin={{
-                                vertical: 'bottom',
-                                horizontal: 'left',
-                            }}
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'left',
-                            }}
-                        >
-                            {!_.isNil(this.state) && !_.isNil(this.state.acSensor) ?
-                                <List sx={{p: 2}}>
-                                    <ListItem>
-                                        <ListItemIcon>
-                                            <Thermostat/>
-                                        </ListItemIcon>
-                                        <ListItemText>
-                                            { this.state.acSensor.outdoorTemperature }°C à l'extérieur
-                                        </ListItemText>
-                                    </ListItem>
-                                    <ListItem>
-                                        <ListItemIcon>
-                                            <WiHumidity style={{fontSize: "26px"}}/>
-                                        </ListItemIcon>
-                                        <ListItemText>
-                                            { this.state.acSensor.indoorHumidity }%
-                                        </ListItemText>
-                                    </ListItem>
-                                </List>
-                                :
-                                <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '36px' }} />
+                                <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '58px', height: '38px' }} />
                             }
-                        </Popover>
-                        {!_.isNil(this.state) && !_.isNil(this.state.acControl) ?
-                            <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }} onClick={(event: React.MouseEvent) => this.openAdditionalInformationPopover.bind(this)(event)}>
-                                <Tooltip title={"Température demandée"}>
-                                    <Box sx={{display: 'flex', m: 0.5}}>
+                            <IconButton
+                                size="small"
+                                id={"clients-component-" + this.props.id}
+                                onClick={(event) => { this.openMenu.bind(this)(event) }}
+                                aria-controls={!_.isNil(this.state) && this.state.isMenuOpen ? 'basic-menu' : undefined}
+                                aria-haspopup="true"
+                                aria-expanded={!_.isNil(this.state) && this.state.isMenuOpen ? 'true' : undefined}
+                            >
+                                <MoreVert />
+                            </IconButton>
+                        </Box>
+                    }
+                />
+                <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
+                    {this.renderError()}
+                    <Popover
+                        open={this.state.isAdditionalInformationOpen}
+                        anchorEl={this.state.additionalInformationAnchorEl}
+                        onClose={this.handleAdditionalInformationPopoverClose.bind(this)}
+                        anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'left',
+                        }}
+                        transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'left',
+                        }}
+                    >
+                        {!_.isNil(this.state) && !_.isNil(this.state.acSensor) ?
+                            <List sx={{p: 2}}>
+                                <ListItem>
+                                    <ListItemIcon>
                                         <Thermostat/>
-                                        { this.state.acControl.targetTemperature }°C
-                                    </Box>
-                                </Tooltip>
-                                <Tooltip title={"Température intérieure"}>
-                                    <Box sx={{display: 'flex', m: 0.5}}>
-                                        <Home/>
-                                        {this.state.acSensor.indoorTemperature }°C
-                                    </Box>
-                                </Tooltip>
-                                <Box sx={{display: 'flex', m: 0.5, marginLeft: "auto"}}>
-                                    {mode}
-                                    {specialMode}
-                                </Box>
-                            </Typography>
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        { this.state.acSensor.outdoorTemperature }°C à l'extérieur
+                                    </ListItemText>
+                                </ListItem>
+                                <ListItem>
+                                    <ListItemIcon>
+                                        <WiHumidity style={{fontSize: "26px"}}/>
+                                    </ListItemIcon>
+                                    <ListItemText>
+                                        { this.state.acSensor.indoorHumidity }%
+                                    </ListItemText>
+                                </ListItem>
+                            </List>
                             :
-                            <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%' }} />
+                            <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '36px' }} />
                         }
-                    </CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
+                    </Popover>
+                    {!_.isNil(this.state) && !_.isNil(this.state.acControl) ?
+                        <Typography variant="subtitle1" color="text.secondary" component="div" sx={{ display: 'flex' }} onClick={(event: React.MouseEvent) => this.openAdditionalInformationPopover.bind(this)(event)}>
+                            <Tooltip title={"Température demandée"}>
+                                <Box sx={{display: 'flex', m: 0.5}}>
+                                    <Thermostat/>
+                                    { this.state.acControl.targetTemperature }°C
+                                </Box>
+                            </Tooltip>
+                            <Tooltip title={"Température intérieure"}>
+                                <Box sx={{display: 'flex', m: 0.5}}>
+                                    <Home/>
+                                    {this.state.acSensor.indoorTemperature }°C
+                                </Box>
+                            </Tooltip>
+                            <Box sx={{display: 'flex', m: 0.5, marginLeft: "auto"}}>
+                                {mode}
+                                {specialMode}
+                            </Box>
+                        </Typography>
+                        :
+                        <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%' }} />
+                    }
+                </CardContent>
+                <CardActions sx={{ width: '100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         {!_.isNil(this.state) && !_.isNil(this.state.acControl) ?
                             <Box>
                                 <Tooltip title="Diminuer la température désirée">
@@ -608,7 +616,7 @@ class AirDaikinComponent extends AbstractDevice<IAirDaikinComponentProps, IAirDa
                             <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '80px', height: '48px' }} />
                         }
                     </Box>
-                </Box>
+                </CardActions>
             </Card>
         );
     }
