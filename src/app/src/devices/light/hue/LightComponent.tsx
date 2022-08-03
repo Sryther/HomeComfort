@@ -59,7 +59,7 @@ class LightComponent extends AbstractDevice<LightComponentProps, LightComponentS
             this.setState({
                 lightState: data,
                 power: data.on ? "on" : "off",
-                brightness: data.bri,
+                brightness: data.on ? data.bri : 0,
                 color: {
                     hue: 0,
                     saturation: 0,
@@ -93,7 +93,6 @@ class LightComponent extends AbstractDevice<LightComponentProps, LightComponentS
 
     async setLightColor(newColor: HslColor): Promise<any> {
         try {
-            console.log(newColor)
             const color = {
                 hue: Math.max(newColor.h, 0),
                 saturation: Math.max(newColor.s, 0),
