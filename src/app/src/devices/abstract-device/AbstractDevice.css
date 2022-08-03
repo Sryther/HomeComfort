@@ -1,20 +1,26 @@
 .MuiCard-root {
     position: relative;
     min-height: 12vw;
-    display: block;
     flex-grow: 1;
     flex-basis: 0;
     max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.MuiCardContent-root {
+    display: flex;
+    flex: 1;
 }
 
 .MuiCardActions-root {
-    position: absolute;
-    bottom: 0;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-content: center;
     width: 100%;
+    margin-top: auto;
 }
 
 .MuiCardHeader-title {
