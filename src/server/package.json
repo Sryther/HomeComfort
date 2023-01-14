@@ -24,7 +24,7 @@
     "lodash": "^4.17.21",
     "miio": "^0.15.6",
     "moment": "^2.29.4",
-    "mongoose": "^6.1.7",
+    "mongoose": "^6.4.6",
     "morgan": "^1.10.0",
     "node-gzip": "^1.1.2",
     "node-hue-api": "^5.0.0-beta.13",
