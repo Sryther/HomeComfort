@@ -1,21 +1,21 @@
-FROM node:14-slim as tsc-builder
+FROM node:16-slim as tsc-builder
 WORKDIR /usr/src/app
 
 COPY . .
-RUN apt-get update || : && apt-get install python build-essential -y && \
+RUN apt-get update || : && apt-get install python3 build-essential -y && \
     yarn install && yarn run tsc && \
     rm -rf /var/cache/apk/*
 
-FROM node:14-slim as runtime-container
+FROM node:16-slim as runtime-container
 WORKDIR /usr/src/app
 
 COPY --from=tsc-builder /usr/src/app/dist ./build
 COPY --from=tsc-builder ["/usr/src/app/package.json", "/usr/src/app/yarn.lock", "./"]
 
-RUN apt update || : && apt install python build-essential inetutils-ping -y && \
+RUN apt update || : && apt install python3 build-essential inetutils-ping -y && \
     rm -rf /var/cache/apk/* && \
     yarn install --prod && \
-    apt remove python build-essential -y
+    apt remove python3 build-essential -y
 
 EXPOSE 3000
 
