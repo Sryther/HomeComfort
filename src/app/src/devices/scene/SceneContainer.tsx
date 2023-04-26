@@ -1,35 +1,14 @@
-import {Component} from "react";
 import SceneComponent from "./SceneComponent";
-import {Stack} from "@mui/material";
 import SceneApiClient from "../../api-client/clients/SceneApiClient";
+import AbstractContainer from "../abstract-container/AbstractContainer";
 
-interface IDevicesProps {}
-interface IDevicesState {
-    scenes: any[]
-}
-
-class CleanContainer extends Component<IDevicesProps, IDevicesState> {
-    state = {
-        scenes: []
+class CleanContainer extends AbstractContainer<any, any> {
+    async getData() {
+        return await SceneApiClient.getInstance().all();
     }
 
-    async componentDidMount() {
-        try {
-            const { data } = await SceneApiClient.getInstance().all();
-            this.setState({
-                scenes: data
-            });
-        } catch(error) {
-            console.error(error);
-        }
-    }
-
-    render() {
-        return (
-            <Stack direction="row" sx={{ width: '100%', display: 'flex' }}>
-                {this.state.scenes.map((scene: any) => <SceneComponent key={scene._id} id={scene._id} name={scene.name} itemDefinitionName={"Editer la scène"} />)}
-            </Stack>
-        )
+    renderDevice(scene: any) {
+        return <SceneComponent key={scene._id} id={scene._id} name={scene.name} itemDefinitionName={"Editer la scène"} />;
     }
 }
 

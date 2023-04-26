@@ -1,3 +1,7 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
 enum ENV {
     DEVELOPMENT = 'DEVELOPMENT',
     PRODUCTION = 'PRODUCTION'

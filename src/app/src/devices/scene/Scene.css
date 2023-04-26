@@ -1,3 +1,12 @@
 .MuiListItemText-primary {
     font-weight: bold!important;
 }
+
+.MuiListItem-root {
+    padding: none;
+    padding-left: 16px;
+}
+
+.MuiListItemText-root {
+    margin: none;
+}
