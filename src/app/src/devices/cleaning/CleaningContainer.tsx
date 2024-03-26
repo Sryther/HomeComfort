@@ -1,35 +1,14 @@
-import {Component} from "react";
 import CleaningRoborockComponent from "./CleaningRoborockComponent";
-import {Stack} from "@mui/material";
 import CleanApiClient from "../../api-client/clients/CleanApiClient";
+import AbstractContainer from "../abstract-container/AbstractContainer";
 
-interface IDevicesProps {}
-interface IDevicesState {
-    roborockDevices: any[]
-}
-
-class CleaningContainer extends Component<IDevicesProps, IDevicesState> {
-    state = {
-        roborockDevices: []
+class CleaningContainer extends AbstractContainer<any, any> {
+    async getData() {
+        return await CleanApiClient.getInstance().allRoborocks();
     }
 
-    async componentDidMount() {
-        try {
-            const { data } = await CleanApiClient.getInstance().allRoborocks();
-            this.setState({
-                roborockDevices: data
-            });
-        } catch(error) {
-            console.error(error);
-        }
-    }
-
-    render() {
-        return (
-            <Stack direction="row" sx={{ width: '100%', display: 'flex' }}>
-                {this.state.roborockDevices.map((device: any) => <CleaningRoborockComponent key={device._id} id={device._id} name={device.name} ip={device.ip} />)}
-            </Stack>
-        )
+    renderDevice(device: any) {
+        return <CleaningRoborockComponent key={device._id} id={device._id} name={device.name} ip={device.ip} />;
     }
 }
 

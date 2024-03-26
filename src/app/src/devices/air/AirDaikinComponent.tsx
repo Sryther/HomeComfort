@@ -16,8 +16,6 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
-    Modal,
-    Stack,
     Skeleton,
     CardHeader,
     CardActions
@@ -33,7 +31,6 @@ import {
     AcUnit,
     Autorenew,
     Stream,
-    BarChart,
     LightModeTwoTone,
     NightlightTwoTone
 } from "@mui/icons-material";
@@ -42,24 +39,8 @@ import { ImPower } from "react-icons/im";
 import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../abstract-device/AbstractDevice";
 import {IoWaterOutline} from "react-icons/io5";
 import {WiHumidity} from "react-icons/wi";
-import {AxisOptions, Chart} from "react-charts";
 import {v4 as uuidv4} from "uuid";
 import AirApiClient from "../../api-client/clients/AirApiClient";
-
-type Consumption = {
-    date: string,
-    consumption: number
-}
-
-type Series<T> = {
-    label: string,
-    data: T[]
-}
-
-type Stats = {
-    daily: Series<Consumption>[],
-    monthly: Series<Consumption>[]
-}
 
 interface IAirDaikinComponentProps extends IAbstractDeviceProps {
     id: string,
@@ -76,9 +57,7 @@ interface IAirDaikinComponentState extends IAbstractDeviceState {
     acYearPower?: any,
     commonBasic?: any,
     additionalInformationAnchorEl?: any,
-    isAdditionalInformationOpen: boolean,
-    isStatsOpen: boolean,
-    statsData: Stats
+    isAdditionalInformationOpen: boolean
 }
 
 moment.locale('fr');
@@ -275,12 +254,6 @@ class AirDaikinComponent extends AbstractDevice<IAirDaikinComponentProps, IAirDa
             <ListItemText>Désactiver les LEDs</ListItemText>
         </MenuItem>);
 
-        menu.push(<Divider key={"divideLed" + uuidv4()} />);
-        menu.push(<MenuItem key={`air-getstats-${this.props.id}` + uuidv4()} onClick={() => this.displayStats.bind(this)()}>
-            <ListItemIcon><BarChart /></ListItemIcon>
-            <ListItemText>Voir les statistiques</ListItemText>
-        </MenuItem>);
-
         return menu;
     }
 
@@ -293,123 +266,6 @@ class AirDaikinComponent extends AbstractDevice<IAirDaikinComponentProps, IAirDa
             console.error(error);
             return null;
         }
-    }
-
-    displayStats() {
-        this.setState({
-            isBackdropOpen: true
-        });
-        this.closeMenu();
-
-        const dailyData: Series<Consumption>[] = [{
-            label: 'Utilisation journalière cumulée (heures)',
-            data: []
-        }];
-        const monthlyData: Series<Consumption>[] = [{
-            label: 'Consommation mensuelle (kWh)',
-            data: []
-        }];
-
-        if (!_.isNil(this.state.acWeekPower)) {
-            dailyData[0].data.push({
-                consumption: Math.round(this.state.acWeekPower.todayRuntime) / 60,
-                date: "Aujourd'hui"
-            });
-
-            for (let i = 0; i < this.state.acWeekPower.data.length; i++) {
-                const data = this.state.acWeekPower.data[i];
-                dailyData[0].data.push({
-                    consumption: Math.round(data / 60),
-                    date: moment().subtract(i + 1, 'day').format("dddd")
-                })
-            }
-        }
-
-        if (!_.isNil(this.state.acYearPower)) {
-            for (let i = 0; i < this.state.acYearPower.previousYear.length; i++) {
-                const data = this.state.acYearPower.previousYear[i];
-                monthlyData[0].data.push({
-                    consumption: data / 10,
-                    date: moment().set('month', i).format("MMMM") + " " + moment().format("YYYY")
-                });
-            }
-            for (let i = 0; i < this.state.acYearPower.currentYear.length; i++) {
-                const data = this.state.acYearPower.currentYear[i];
-                monthlyData[0].data.push({
-                    consumption: data / 10,
-                    date: moment().set('month', i).format("MMMM") + " " + moment().subtract(1, 'year').format("YYYY")
-                });
-            }
-        }
-
-        this.setState({
-            isStatsOpen: true,
-            statsData: {
-                daily: dailyData,
-                monthly: monthlyData
-            },
-            isBackdropOpen: false
-        });
-    }
-
-    renderStats() {
-        const primaryAxis: AxisOptions<Consumption> = {
-            getValue: datum => datum.date,
-        };
-
-        const secondaryAxes: AxisOptions<Consumption>[] = [{
-            getValue: datum => datum.consumption,
-        }];
-
-        if (!_.isNil(this.state.statsData)) {
-            const dailyStats = this.state.statsData.daily;
-            const monthlyStats = this.state.statsData.monthly;
-
-            return (
-                <Box sx={{
-                    position: 'absolute' as 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '80%',
-                    height: '80%',
-                    bgcolor: 'background.paper',
-                    borderRadius: '5px',
-                    boxShadow: 24,
-                    p: 4,
-                }}>
-                    <Stack style={{"width": "100%", "height": "100%"}}>
-                        <div style={{"width": "100%", "height": "50%"}}>
-                            {this.state.isStatsOpen && <Chart
-                                id={`daily-stats-${this.props.id}`}
-                                key={`daily-stats-${this.props.id}` + uuidv4()}
-                                options={{
-                                    data: dailyStats,
-                                    primaryAxis,
-                                    secondaryAxes,
-                                }}
-                            />}
-                        </div>
-                        <div style={{"width": "100%", "height": "50%"}}>
-                            {this.state.isStatsOpen && <Chart
-                                id={`monthly-stats-${this.props.id}`}
-                                key={`monthly-stats-${this.props.id}` + uuidv4()}
-                                options={{
-                                    data: monthlyStats,
-                                    primaryAxis,
-                                    secondaryAxes,
-                                }}
-                            />}
-                        </div>
-                    </Stack>
-                </Box>
-            );
-        }
-        return (<div />);
-    }
-
-    onStatsClose() {
-        this.setState({ isStatsOpen: false });
     }
 
     openAdditionalInformationPopover(event: React.MouseEvent) {
@@ -505,12 +361,6 @@ class AirDaikinComponent extends AbstractDevice<IAirDaikinComponentProps, IAirDa
             <Card sx={{ m: 0.5, 'minWidth': '30%' }}>
                 {this.renderMenu(this.getPossibleActions())}
                 {this.renderInformationModal()}
-                <Modal
-                    open={this.state.isStatsOpen}
-                    onClose={this.onStatsClose.bind(this)}
-                >
-                    {this.renderStats.bind(this)()}
-                </Modal>
                 <CardHeader
                     sx={{ width: '100%' }}
                     avatar={<Air />}
