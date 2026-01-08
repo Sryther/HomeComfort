@@ -59,22 +59,4 @@ router.delete("/:id/action/:actionId", async (req: Request, res: Response, next:
     }
 });
 
-
-router.get("/devices/:deviceType/:deviceId", async (req: Request, res: Response, next: NextFunction) => {
-    const deviceId = req.params.deviceId;
-    const deviceType = req.params.deviceType;
-
-    try {
-        const schedules = await Scene.find({
-            deviceType: deviceType,
-            deviceId: deviceId
-        });
-
-        return res.status(200).send(schedules);
-    } catch(error) {
-        console.error(`Couldn't retrieve schedules for device ${deviceId} (${deviceType})`, error);
-        return res.status(500).send(error);
-    }
-});
-
 export default router;

@@ -3,7 +3,6 @@ import {ActionDocument, ActionSchema} from "../action/Action";
 
 export interface SceneDocument extends Document {
     name: string,
-    description: string,
     actions: ActionDocument[]
 }
 
