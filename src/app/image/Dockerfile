@@ -1,7 +1,8 @@
-FROM node:14-slim AS build
+FROM arm32v7/node:22-slim AS build
 
 WORKDIR /usr/src/app
 COPY . .
+
 RUN npm install && \
     npm run build
 

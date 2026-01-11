@@ -1,24 +1,44 @@
 /**
- * @typedef {Object} ACParams
- * @property {Boolean} power Enable or disable the device, you can also use DaikinAC-Power for allowed values in human readable format
- * @property {Number} mode Set operation Mode of the device, you can also use DaikinAC-Mode for allowed values in human readable format
- * @property {Number|String} targetTemperature Float or "M" for mode 2 (DEHUMDIFICATOR)
- * @property {Number|String} targetHumidity Float or "AUTO"/"--" for mode 6 (FAN)
- * @property {Number} fanRate Integer or "A"/"B", you can also use DaikinAC-FanRate for allowed values in human readable format
- * @property {Number} fanDirection Integer, you can also use DaikinAC-FanDirection for allowed values in human readable format
+ * Represents the parameters for configuring an air conditioning (AC) system.
+ *
+ * @interface ACParamsType
+ * @property {Boolean | null} power Indicates whether the AC system is powered on or off.
+ * @property {String | Number | null} mode Specifies the operational mode of the AC system (e.g., cooling, heating, etc.).
+ * @property {String | Number | null} specialMode Represents any special mode configured for the AC system.
+ * @property {Boolean | Number | null} specialModeActive Indicates whether the special mode is currently active.
+ * @property {Number | String | null} targetTemperature Specifies the desired temperature the AC system should maintain.
+ * @property {Number | String | null} targetHumidity Specifies the desired humidity level the AC system should maintain.
+ * @property {Number | null} fanRate Represents the speed or rate of the AC fan.
+ * @property {Number | null} fanDirection Represents the direction of airflow from the AC system.
  */
+interface ACParamsType {
+    power: Boolean | null;
+    mode: String | Number | null;
+    specialMode: String | Number | null;
+    specialModeActive: Boolean | Number | null;
+    targetTemperature: Number | String | null;
+    targetHumidity: Number | String | null;
+    fanRate: Number | null;
+    fanDirection: Number | null;
+}
 
-export default class ACParams {
-    private _power: Boolean|null = null;
-    private _mode: Number|String|null = null;
-    private _specialMode: Number|String|null = null;
-    private _specialModeActive: Boolean|Number|null = null;
-    private _targetTemperature: Number|String|null = null;
-    private _targetHumidity: Number|String|null = null;
-    private _fanRate: Number|null = null;
-    private _fanDirection: Number|null = null;
+/**
+ * Represents the parameters for an air conditioning (AC) system.
+ * Provides getter and setter methods to manage the AC state and configuration.
+ * Includes methods to convert the object's state into a plain object representation.
+ */
+export class ACParams implements ACParamsType {
+    private _power: Boolean | null = null;
+    private _mode: Number | String | null = null;
+    private _specialMode: Number | String | null = null;
+    private _specialModeActive: Boolean | Number | null = null;
+    private _targetTemperature: Number | String | null = null;
+    private _targetHumidity: Number | String | null = null;
+    private _fanRate: Number | null = null;
+    private _fanDirection: Number | null = null;
 
-    constructor() { }
+    constructor() {
+    }
 
     toObject(): any {
         const returnValue: any = {

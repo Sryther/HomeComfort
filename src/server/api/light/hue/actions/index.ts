@@ -10,11 +10,25 @@ const deviceName = 'helix';
 
 type LightsType = model.Light | model.Luminaire | model.Lightsource;
 
-async function searchBridges() {
+/**
+ * Searches for bridges in the network using the nupnp discovery method.
+ * Utilizes the discovery.nupnpSearch() function to find and return a list of bridge details.
+ *
+ * @return {Promise<Array<Object>>} A promise that resolves to an array of bridge objects. Each object contains details about a found bridge.
+ */
+async function searchBridges(): Promise<Array<any>> {
     return await discovery.nupnpSearch();
 }
 
-async function discoverBridge(req: Request, res: Response, next: NextFunction) {
+/**
+ * Discovers and configures bridges on the local network, including associated lights. Handles creating new bridges, updating existing ones, and linking users to bridge configurations.
+ *
+ * @param {Request} req - The HTTP request object provided by the express middleware.
+ * @param {Response} res - The HTTP response object for sending responses back to the client.
+ * @param {NextFunction} next - The next middleware function in the express request lifecycle.
+ * @return {Promise<Response>} No return value. Sends the appropriate HTTP response based on the discovery process, including discovered bridges and errors.
+ */
+async function discoverBridge(req: Request, res: Response, next: NextFunction): Promise<Response> {
     const bridgesFound = await searchBridges();
     if (bridgesFound.length === 0) {
         console.log("No bridge discovered.");
@@ -108,8 +122,20 @@ async function discoverBridge(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-async function getBridgeConfiguration(req: Request, res: Response, next: NextFunction) {
-    if (!_.isNil(ObjectIdVerifier(["id"], req, res, next))) return;
+/**
+ * Retrieves the configuration of a bridge based on the provided bridge ID in the request.
+ * If the bridge is found, attempts to establish a connection and fetch the current configuration.
+ * Responds with the configuration data or appropriate status codes based on the outcome.
+ *
+ * @param {Request} req - The HTTP request object containing the bridge ID in the path parameters.
+ * @param {Response} res - The HTTP response object used to send the configuration or status code back to the client.
+ * @param {NextFunction} next - The next middleware function in the request-response cycle.
+ * @return {Promise<Response>} A Promise that resolves when the process completes, sending the bridge configuration, a 404 status code if not found, or a 500 status code on error.
+ */
+async function getBridgeConfiguration(req: Request, res: Response, next: NextFunction): Promise<Response> {
+    if (!_.isNil(ObjectIdVerifier(["id"], req, res, next))) {
+        return res.sendStatus(400);
+    }
 
     const bridge = await Bridge.findById(req.params.id);
 
@@ -128,8 +154,19 @@ async function getBridgeConfiguration(req: Request, res: Response, next: NextFun
     return res.sendStatus(404);
 }
 
-async function getLights(req: Request, res: Response, next: NextFunction) {
-    if (!_.isNil(ObjectIdVerifier(["idBridge"], req, res, next))) return;
+/**
+ * Retrieves a list of lights associated with a specific bridge.
+ *
+ * @param {Request} req - The HTTP request object, containing the bridge ID in the parameters.
+ * @param {Response} res - The HTTP response object used to send the response.
+ * @param {NextFunction} next - The next middleware function in the request-response cycle.
+ * @return {Promise<Response>} Resolves with a response containing the list of lights if the bridge exists,
+ *                         or a 404 status code if the bridge is not found.
+ */
+async function getLights(req: Request, res: Response, next: NextFunction): Promise<Response> {
+    if (!_.isNil(ObjectIdVerifier(["idBridge"], req, res, next))) {
+        return res.sendStatus(400);
+    }
 
     const bridge = await Bridge.findById(req.params.idBridge);
     const lights = await Light.find({ bridge: req.params.idBridge });
@@ -141,8 +178,18 @@ async function getLights(req: Request, res: Response, next: NextFunction) {
     return res.sendStatus(404);
 }
 
-async function getLight(req: Request, res: Response, next: NextFunction) {
-    if (!_.isNil(ObjectIdVerifier(["id", "idBridge"], req, res, next))) return;
+/**
+ * Retrieves a light resource by its ID and associated bridge ID.
+ *
+ * @param {Request} req - The HTTP request object, containing route parameters `id` and `idBridge` for the light and bridge respectively.
+ * @param {Response} res - The HTTP response object used to send the retrieved light data or a status code.
+ * @param {NextFunction} next - The function to pass control to the next middleware in the stack.
+ * @return {Promise<Response>} Resolves with the light object if found, or sends a 404 status code if not found.
+ */
+async function getLight(req: Request, res: Response, next: NextFunction): Promise<Response> {
+    if (!_.isNil(ObjectIdVerifier(["id", "idBridge"], req, res, next))) {
+        return res.sendStatus(400);
+    }
 
     const bridge = await Bridge.findById(req.params.idBridge);
     const light = await Light.findById(req.params.id);
@@ -154,8 +201,18 @@ async function getLight(req: Request, res: Response, next: NextFunction) {
     return res.sendStatus(404);
 }
 
-async function getLightState(req: Request, res: Response, next: NextFunction) {
-    if (!_.isNil(ObjectIdVerifier(["id", "idBridge"], req, res, next))) return;
+/**
+ * Retrieves the state of a specific light by interacting with the associated bridge.
+ *
+ * @param {Request} req - The HTTP request object containing parameters such as `id` and `idBridge`.
+ * @param {Response} res - The HTTP response object used to send back the light state or error information.
+ * @param {NextFunction} next - The NextFunction callback for passing control to the next middleware.
+ * @return {Promise<Response>} A promise that resolves with the light state if successful, or an HTTP error status otherwise.
+ */
+async function getLightState(req: Request, res: Response, next: NextFunction): Promise<Response> {
+    if (!_.isNil(ObjectIdVerifier(["id", "idBridge"], req, res, next))) {
+        return res.sendStatus(400);
+    }
 
     const bridge = await Bridge.findById(req.params.idBridge);
     const light = await Light.findById(req.params.id);
@@ -175,8 +232,27 @@ async function getLightState(req: Request, res: Response, next: NextFunction) {
     return res.sendStatus(404);
 }
 
-async function setLightState(req: Request, res: Response, next: NextFunction) {
-    if (!_.isNil(ObjectIdVerifier(["id", "idBridge"], req, res, next))) return;
+/**
+ * Updates the state of a light associated with a specific bridge using the provided parameters.
+ *
+ * @param {Request} req - The HTTP request object containing parameters and body data.
+ *                         Expected parameters: `id` (light ID), `idBridge` (bridge ID).
+ *                         Expected body properties:
+ *                         - `power` (string): "on" or "off" to control light power state.
+ *                         - `brightness` (number): Integer value for light brightness.
+ *                         - `color` (object): Object containing `hue`, `saturation`, and `brightness` properties for light color configuration.
+ * @param {Response} res - The HTTP response object for sending the response.
+ * @param {NextFunction} next - The next middleware function in the execution chain.
+ * @return {Promise<Response>} Resolves with an HTTP response indicating:
+ *                             - 200 if the light state is successfully updated.
+ *                             - 400 if request validation fails.
+ *                             - 404 if light or bridge is not found.
+ *                             - 500 if an error occurs during state update.
+ */
+async function setLightState(req: Request, res: Response, next: NextFunction): Promise<Response> {
+    if (!_.isNil(ObjectIdVerifier(["id", "idBridge"], req, res, next))) {
+        return res.sendStatus(400);
+    }
 
     const bridge = await Bridge.findById(req.params.idBridge);
     const light = await Light.findById(req.params.id);

@@ -2,6 +2,10 @@ import ApiClient, {AbstractClient} from "../index";
 import _ from "lodash";
 import {AxiosResponse} from "axios";
 
+/**
+ * Singleton class for handling network-related API requests.
+ * Extends the AbstractClient class to provide network management functionality.
+ */
 class NetworkApiClient extends AbstractClient {
     private static instance: NetworkApiClient;
     baseUrl = "/network";
@@ -10,6 +14,12 @@ class NetworkApiClient extends AbstractClient {
         super();
     }
 
+    /**
+     * Retrieves the singleton instance of the NetworkApiClient class.
+     * If the instance does not already exist, a new instance is created.
+     *
+     * @return {NetworkApiClient} The singleton instance of NetworkApiClient.
+     */
     public static getInstance(): NetworkApiClient {
         if (_.isNil(NetworkApiClient.instance)) {
             NetworkApiClient.instance = new NetworkApiClient();
@@ -18,6 +28,11 @@ class NetworkApiClient extends AbstractClient {
         return NetworkApiClient.instance;
     }
 
+    /**
+     * Fetches all available endpoints from the specified base URL.
+     *
+     * @return {Promise<AxiosResponse>} A promise that resolves to the AxiosResponse containing all endpoints.
+     */
     async allEndpoints(): Promise<AxiosResponse> {
         try {
             return await ApiClient.getInstance().get(`${this.baseUrl}/endpoints`);
@@ -27,6 +42,13 @@ class NetworkApiClient extends AbstractClient {
         }
     }
 
+    /**
+     * Retrieves endpoint data based on the given identifier.
+     *
+     * @param {string} id - The unique identifier of the endpoint to be fetched.
+     * @return {Promise<AxiosResponse>} A promise that resolves with the Axios response containing the endpoint details.
+     * @throws Will throw an error if the endpoint cannot be retrieved.
+     */
     async getEndpoint(id: string): Promise<AxiosResponse> {
         try {
             return await ApiClient.getInstance().get(`${this.baseUrl}/endpoints/${id}`);
@@ -36,6 +58,12 @@ class NetworkApiClient extends AbstractClient {
         }
     }
 
+    /**
+     * Sends a request to wake up a specific endpoint.
+     *
+     * @param {string} id - The identifier of the endpoint to wake.
+     * @return {Promise<AxiosResponse>} A promise that resolves with the response from the server.
+     */
     async wakeEndpoint(id: string): Promise<AxiosResponse> {
         try {
             return await ApiClient.getInstance().post(`${this.baseUrl}/endpoints/${id}/wake`);
@@ -45,6 +73,13 @@ class NetworkApiClient extends AbstractClient {
         }
     }
 
+    /**
+     * Checks if the specified endpoint is alive by sending a GET request to the endpoint's alive URL.
+     *
+     * @param {string} id - The unique identifier of the endpoint to be checked.
+     * @return {Promise<AxiosResponse>} A promise that resolves to the Axios response of the request.
+     * @throws Will throw an error if the request fails or the endpoint cannot be reached.
+     */
     async isEndpointAlive(id: string): Promise<AxiosResponse> {
         try {
             return await ApiClient.getInstance().get(`${this.baseUrl}/endpoints/${id}/alive`);
@@ -54,6 +89,13 @@ class NetworkApiClient extends AbstractClient {
         }
     }
 
+    /**
+     * Updates an endpoint with the given data.
+     *
+     * @param {string} id - The unique identifier of the endpoint to update.
+     * @param {any} data - The data to update the endpoint with.
+     * @return {Promise<AxiosResponse>} A promise that resolves to the HTTP response from the update request.
+     */
     async updateEndpoint(id: string, data: any): Promise<AxiosResponse> {
         try {
             return await ApiClient.getInstance().put(`${this.baseUrl}/endpoints/${id}`, data);

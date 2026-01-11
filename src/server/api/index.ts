@@ -6,13 +6,14 @@ import morgan from 'morgan';
 import cors from 'cors';
 import getPackageVersion from '@jsbits/get-package-version'
 
-import CleaningApi from './cleaning';
-import LayoutsApi from './layouts';
-import NetworkApi from './network';
 import AirApi from './air';
+import CleaningApi from './cleaning';
+import EventApi from './event';
+import LayoutsApi from './layouts';
 import LightApi from './light';
-import SchedulesApi from './schedule';
+import NetworkApi from './network';
 import SceneApi from './scene';
+import SchedulesApi from './schedule';
 import ProjectionScreenApi from './projection-screen';
 import VideoProjectorApi from './video-projector';
 import schedulesAndScenesInterceptor from "../lib/api/middlewares/schedules-and-scenes";
@@ -32,18 +33,29 @@ App.use(saveEventsInterceptor);
 App.use(schedulesAndScenesInterceptor);
 
 // Sub routers.
-router.use('/cleaning', CleaningApi);
-router.use('/layouts', LayoutsApi);
-router.use('/network', NetworkApi);
 router.use('/air', AirApi);
+router.use('/cleaning', CleaningApi);
+router.use('/event', EventApi);
+router.use('/layouts', LayoutsApi);
 router.use('/light', LightApi);
-router.use('/schedule', SchedulesApi);
+router.use('/network', NetworkApi);
 router.use('/scene', SceneApi);
+router.use('/schedule', SchedulesApi);
 router.use('/projection-screen', ProjectionScreenApi);
 router.use('/video-projector', VideoProjectorApi);
 
 // Final path.
 App.use('/api', router);
+
+// Logs when requests arrive and when they're done.
+App.use((req, res, next) => {
+    const start = Date.now();
+    console.log(`[REQ] ${req.method} ${req.originalUrl}`);
+    res.on("finish", () => {
+        console.log(`[RES] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${Date.now() - start}ms)`);
+    });
+    next();
+});
 
 // Documentation
 let docOptions = {

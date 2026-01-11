@@ -2,9 +2,13 @@ import './App.css';
 import {Container} from "@mui/material";
 import Menu from "../menu/Menu";
 import React, {Component} from "react";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Devices from "../devices/Devices";
 import Toasts from "../toasts/Toasts";
+import SchedulesPage from "../pages/SchedulesPage";
+import HistoryPage from "../pages/HistoryPage";
+import ScenesPage from "../pages/ScenesPage";
 
 interface IAppProps {}
 
@@ -12,6 +16,7 @@ interface IAppState {
     snackOpen: boolean,
     snackMessage: string
 }
+
 
 class App extends Component<IAppProps, IAppState> {
     constructor(props: any) {
@@ -42,10 +47,18 @@ class App extends Component<IAppProps, IAppState> {
       return (
           <div className="App">
               <Toasts />
-              <Menu />
-              <Container maxWidth="md">
-                  <Devices />
-              </Container>
+              <HashRouter>
+                  <Menu />
+                  <Container maxWidth="md">
+                      <Routes>
+                          <Route path="/" element={<Navigate to="/devices" replace />} />
+                          <Route path="/devices" element={<Devices />} />
+                          <Route path="/schedules" element={<SchedulesPage />} />
+                          <Route path="/history" element={<HistoryPage />} />
+                          <Route path="/scenes" element={<ScenesPage />} />
+                      </Routes>
+                  </Container>
+              </HashRouter>
           </div>
       );
     }

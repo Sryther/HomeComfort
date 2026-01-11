@@ -7,9 +7,12 @@ import { AddressInfo } from 'net';
 import CRONManager from "./lib/api/CRONManager";
 
 const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
+db.on("connected", () => console.log("[Mongo] connected"));
+db.on("disconnected", () => console.log("[Mongo] disconnected"));
+db.on("reconnected", () => console.log("[Mongo] reconnected"));
+db.on("error", (err) => console.error("[Mongo] error", err));
 db.once('open', () => {
-    console.log('Connected to mongodb!');
+    console.log('[Mongo] Connected!');
 
     const server = Api.listen(Config.api.port, Config.api.hostname, async () => {
         const {port, address} = server.address() as AddressInfo;

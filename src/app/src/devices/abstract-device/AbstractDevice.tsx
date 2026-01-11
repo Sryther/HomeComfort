@@ -47,7 +47,7 @@ abstract class AbstractDevice<IProps extends IAbstractDeviceProps, IState extend
         hasRaisenAnError: false
     };
 
-    protected constructor(props: any) {
+    constructor(props: any) {
         super(props);
         this.menuAnchorEl = null;
         this.updateDeviceInformationItem = (

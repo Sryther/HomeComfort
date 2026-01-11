@@ -1,25 +1,37 @@
-import React, { Component } from 'react';
-import BurgerMenu from 'react-burger-menu';
-
+import React, { Component } from "react";
+import BurgerMenu from "react-burger-menu";
+import { Link } from "react-router-dom";
 import "./Menu.css";
 import logo from "../small-logo.png";
 
-interface IMenuProps {}
-interface IMenuState {}
+interface State {
+    isOpen: boolean;
+}
 
-class Menu extends Component<IMenuProps, IMenuState> {
-    showSettings(event: any) {
-        event.preventDefault();
-    }
+class Menu extends Component<{}, State> {
+    state: State = {
+        isOpen: false
+    };
+
+    handleStateChange = (state: any) => {
+        this.setState({ isOpen: state.isOpen });
+    };
+
+    closeMenu = () => {
+        this.setState({ isOpen: false });
+    };
 
     render() {
-        const Bubble = BurgerMenu.bubble;
+        const Bubble = (BurgerMenu as any).bubble;
         return (
-            <Bubble customBurgerIcon={<img className={"logo"} src={logo}  alt={"logo"}/>}>
-                <a id="home" className="menu-item" href="/">Accueil</a>
-                <a id="devices" className="menu-item" href="/">Tous les équipements</a>
-                <a id="scenes" className="menu-item" href="/">Scènes</a>
-                <a id="schedules" className="menu-item" href="/">Programmes</a>
+            <Bubble isOpen={this.state.isOpen}
+                    onStateChange={this.handleStateChange}
+                    customBurgerIcon={<img className={"logo"} src={logo} alt={"logo"} />}
+            >
+                <Link className="menu-item" to="/devices" onClick={this.closeMenu}>Équipements</Link>
+                <Link className="menu-item" to="/scenes" onClick={this.closeMenu}>Routines</Link>
+                <Link className="menu-item" to="/schedules" onClick={this.closeMenu}>Programmes</Link>
+                <Link className="menu-item" to="/history" onClick={this.closeMenu}>Historique</Link>
             </Bubble>
         );
     }
