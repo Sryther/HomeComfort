@@ -1,28 +1,62 @@
-import Api from './api';
-import Config from './config';
 import { getRoutes } from './debug';
-import mongoose from './data/database-instance';
 
-import { AddressInfo } from 'net';
+import Api from "./api";
+import Configuration from "./configuration";
+import DatabaseInstance from "./data/database-instance";
+import { log } from "./lib/logger";
 import CRONManager from "./lib/api/CRONManager";
 
-const db = mongoose.connection;
-db.on("connected", () => console.log("[Mongo] connected"));
-db.on("disconnected", () => console.log("[Mongo] disconnected"));
-db.on("reconnected", () => console.log("[Mongo] reconnected"));
-db.on("error", (err) => console.error("[Mongo] error", err));
-db.once('open', () => {
-    console.log('[Mongo] Connected!');
+async function start(): Promise<void> {
+    const scopeBoot = "BOOT";
+    const scopeConfig = "CONFIG";
+    const scopeApi = "API";
+    const cronScope = "CRON";
 
-    const server = Api.listen(Config.api.port, Config.api.hostname, async () => {
-        const {port, address} = server.address() as AddressInfo;
+    log.info(scopeBoot, "HomeComfort Server starting…");
+    log.info(scopeBoot, `NODE_ENV=${process.env.NODE_ENV || "undefined"}`);
+    log.info(scopeBoot, `PID=${process.pid}`);
+    log.info(scopeBoot, `Node version=${process.version}`);
 
-        console.log(`Server listening on: http://${address}:${port}`);
-        console.log(`Online documentation available on http://${address}:${port}/docs`);
+    const cfg = Configuration.getInstance();
+    log.info(scopeConfig, "Loading environment variables");
+    log.info(scopeConfig, `API_HOSTNAME=${cfg.getApiHostname()}`);
+    log.info(scopeConfig, `API_PORT=${cfg.getApiPort()}`);
+    log.info(scopeConfig, `DATABASE_URI=${cfg.getDatabaseUri()}`);
+    log.info(scopeConfig, `DATABASE_PORT=${cfg.getDatabasePort()}`);
+    log.info(scopeConfig, `DATABASE_DBNAME=${cfg.getDatabaseDbname()}`);
+    log.info(scopeConfig, `DATABASE_AUTH=${cfg.getDatabaseAuth()}`);
+    if (process.env.TZ) log.info(scopeConfig, `TZ=${process.env.TZ}`);
 
-        console.log(getRoutes(Api));
+    console.log(getRoutes(Api));
 
-        console.log(`Waking up scheduled tasks.`);
-        await CRONManager.launchJobs();
+    // Mongo
+    await DatabaseInstance.getInstance().connect();
+
+    // Express
+    log.info(scopeApi, "Initializing Express application");
+    const server = Api.listen(cfg.getApiPort(), cfg.getApiHostname(), async () => {
+        log.info(scopeApi, `Server listening on http://${cfg.getApiHostname()}:${cfg.getApiPort()}`);
+
+        try {
+            log.info(cronScope, "Initializing scheduler");
+            await CRONManager.launchJobs();
+            log.info(cronScope, "Scheduler started");
+        } catch (err) {
+            log.error(cronScope, "Scheduler initialization failed", err);
+        }
     });
+
+    process.on("SIGINT", () => {
+        log.warn(scopeBoot, "SIGINT received, shutting down");
+        server.close(() => process.exit(0));
+    });
+    process.on("SIGTERM", () => {
+        log.warn(scopeBoot, "SIGTERM received, shutting down");
+        server.close(() => process.exit(0));
+    });
+}
+
+start().catch((err) => {
+    log.error("BOOT", "Fatal error during startup", err);
+    process.exit(1);
 });

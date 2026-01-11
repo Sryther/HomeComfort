@@ -67,3 +67,20 @@ Note: Beware of modifying this element as it can break the animations - you shou
 .logo {
     border-radius: 50%;
 }
+
+.bm-menu {
+    background: #0F172A;
+    padding: 1rem;
+}
+
+.bm-item {
+    display: block;
+    padding: 0.75rem 0.75rem;
+    border-radius: 10px;
+    color: #E5E7EB;
+    text-decoration: none;
+}
+
+.bm-item:hover {
+    background: rgba(56, 189, 248, 0.12);
+}

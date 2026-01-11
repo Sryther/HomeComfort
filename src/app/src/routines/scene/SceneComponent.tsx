@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import "./Scene.css";
 import {PlaylistPlay, MoreVert, PlayArrow} from "@mui/icons-material";
-import AbstractDevice, {IAbstractDeviceState, IAbstractDeviceProps} from "../abstract-device/AbstractDevice";
+import AbstractDevice, {IAbstractDeviceState, IAbstractDeviceProps} from "../../devices/abstract-device/AbstractDevice";
 import SceneApiClient from "../../api-client/clients/SceneApiClient";
 import ApiClient from "../../api-client";
 

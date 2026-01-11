@@ -23,6 +23,9 @@ abstract class AbstractContainer<IProps extends IAbstractContainerProps, IState 
     async componentDidMount() {
         try {
             const { data } = await this.getData();
+            if (!data || data.length === 0) throw new Error(
+                `[${this.constructor.name}] No devices found for this type of device.`
+            )
             this.setState({
                 devices: data
             });

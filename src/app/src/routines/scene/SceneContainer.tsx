@@ -1,6 +1,6 @@
 import SceneComponent from "./SceneComponent";
 import SceneApiClient from "../../api-client/clients/SceneApiClient";
-import AbstractContainer from "../abstract-container/AbstractContainer";
+import AbstractContainer from "../../devices/abstract-container/AbstractContainer";
 
 class CleanContainer extends AbstractContainer<any, any> {
     async getData() {

@@ -4,9 +4,10 @@ import cronstrue from 'cronstrue/i18n';
 import axios, {Method, AxiosRequestConfig} from "axios";
 
 import Schedule, {ScheduleDocument} from '../../data/models/schedule/Schedule';
-import Config from '../../config';
+import Config from '../../configuration';
 import {SceneDocument} from "../../data/models/scene/Scene";
 import {ActionDocument} from "../../data/models/action/Action";
+import { log } from "../logger";
 
 const addSchedule = async (deviceType: string | undefined, deviceId: ObjectId | string | undefined, cronExpression: string, description: string, route: string, httpVerb: string, args: any): Promise<ScheduleDocument> => {
     const schedule = new Schedule({
@@ -45,7 +46,7 @@ export default class CRONManager {
     static cronjobs: Map<string, Cron.CronJob> = new Map();
 
     static axiosInstance = axios.create({
-        baseURL: `http://127.0.0.1:${Config.api.port}`
+        baseURL: `http://127.0.0.1:${Config.getInstance().getApiPort()}`
     });
 
     static async launchJobs() {
@@ -55,7 +56,10 @@ export default class CRONManager {
             console.log("No scheduled task found.");
         }
 
+        log.info("CRON", `Found ${schedules.length} schedules`);
+
         for (const schedule of schedules) {
+            log.info("CRON", `Scheduling job id=${schedule._id} cron="${schedule.cronExpression}"`);
             const job = new Cron.CronJob(schedule.cronExpression, async () => {
                 return this.runJob(schedule);
             });

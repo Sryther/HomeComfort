@@ -4,11 +4,11 @@ import Menu from "../menu/Menu";
 import React, {Component} from "react";
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Devices from "../devices/Devices";
+import Devices from "../pages/Devices";
 import Toasts from "../toasts/Toasts";
 import SchedulesPage from "../pages/SchedulesPage";
 import HistoryPage from "../pages/HistoryPage";
-import ScenesPage from "../pages/ScenesPage";
+import RoutinesPage from "../pages/RoutinesPage";
 
 interface IAppProps {}
 
@@ -55,7 +55,7 @@ class App extends Component<IAppProps, IAppState> {
                           <Route path="/devices" element={<Devices />} />
                           <Route path="/schedules" element={<SchedulesPage />} />
                           <Route path="/history" element={<HistoryPage />} />
-                          <Route path="/scenes" element={<ScenesPage />} />
+                          <Route path="/scenes" element={<RoutinesPage />} />
                       </Routes>
                   </Container>
               </HashRouter>

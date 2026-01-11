@@ -24,10 +24,10 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
             console.log(`[${this.Model.modelName}] before .find()`);
             const items = await this.Model.find()
                 .maxTimeMS(5000);
-            console.log(`[${this.Model.modelName}] after .find()`);
+            console.log(`[${this.Model.modelName}] after .find(), {count=${items.length}}`);
             return res.status(200).send(items);
         } catch (e: any) {
-            console.log(`[${this.Model.modelName}] error .find()`);
+            console.error(`[${this.Model.modelName}] error .find()`);
             console.error(e);
             return res.status(500).send(e.message);
         }
@@ -47,7 +47,7 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
 
             return res.sendStatus(404);
         } catch (e: any) {
-            console.log(`[${this.Model.modelName}] error .findById(${req.params.id})`);
+            console.error(`[${this.Model.modelName}] error .findById(${req.params.id})`);
             console.error(e);
             return res.status(500).send(e.message);
         }
@@ -61,7 +61,7 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
 
             return res.status(201).send(item);
         } catch (e: any) {
-            console.log(`[${this.Model.modelName}] error .create()`);
+            console.error(`[${this.Model.modelName}] error .create()`);
             console.error(e);
             return res.status(500).send(e.message);
         }
@@ -80,7 +80,7 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
                 return res.sendStatus(404);
             }
         } catch (e: any) {
-            console.log(`[${this.Model.modelName}] error .find()`);
+            console.error(`[${this.Model.modelName}] error .find()`);
             console.error(e);
             return res.status(500).send(e.message);
         }
@@ -100,7 +100,7 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
                 return res.sendStatus(404);
             }
         } catch (e: any) {
-            console.log(`[${this.Model.modelName}] error .save()`);
+            console.error(`[${this.Model.modelName}] error .save()`);
             console.error(e);
             return res.status(500).send(e.message);
         }
@@ -119,7 +119,7 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
                 return res.sendStatus(404);
             }
         } catch (e: any) {
-            console.log(`[${this.Model.modelName}] error .find()`);
+            console.error(`[${this.Model.modelName}] error .find()`);
             console.error(e);
             return res.status(500).send(e.message);
         }
@@ -134,7 +134,7 @@ class CRUDRouter<M extends MongooseModel<any>> implements ICRUDRouting {
                 return res.sendStatus(404);
             }
         } catch (e: any) {
-            console.log(`[${this.Model.modelName}] remove .delete()`);
+            console.error(`[${this.Model.modelName}] remove .delete()`);
             console.error(e);
             return res.status(500).send(e.message);
         }

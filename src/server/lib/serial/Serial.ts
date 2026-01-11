@@ -92,7 +92,7 @@ const read = async (pathToPort: string, baudRate: number, value: any, encoding?:
                         return resolve(data);
                     });
 
-                    parser.on('error', async (error) => {
+                    parser.once('error', async (error) => {
                         console.error(`Error parsing response from SerialPort ${pathToPort}.`, error);
 
                         handleTimeoutTermination(timeout);

@@ -77,6 +77,21 @@ class SceneApiClient extends AbstractClient {
     }
 
     /**
+     * Removes a resource identified by the given ID.
+     *
+     * @param {string} id - The identifier of the resource to be removed.
+     * @return {Promise<AxiosResponse>} A promise that resolves to the response of the delete operation.
+     */
+    async remove(id: string): Promise<AxiosResponse> {
+        try {
+            return await ApiClient.getInstance().delete(`${this.baseUrl}/${id}`);
+        } catch (error: any) {
+            super.handleError(error,"Impossible de supprimer la scène.");
+            throw error;
+        }
+    }
+
+    /**
      * Executes a POST request to a specified endpoint using the provided ID and handles potential errors.
      *
      * @param {string} id - The identifier used to construct the endpoint URL.
