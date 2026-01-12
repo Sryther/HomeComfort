@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Box, Stack, Typography } from "@mui/material";
 import SceneApiClient from "../api-client/clients/SceneApiClient";
 import RoutineComponent from "./RoutineComponent";
-import EmptyState from "../ui/EmptyState";
+import EmptyState from "../ui/state/EmptyState";
 
 interface State {
     scenes: any[];

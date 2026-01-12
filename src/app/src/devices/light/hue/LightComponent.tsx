@@ -8,15 +8,17 @@ import {
     CardActions, CardContent,
     CardHeader,
     IconButton,
-    Modal,
+    Modal, Paper,
     Skeleton,
     Slider,
-    Stack,
+    Stack, Table, TableBody, TableCell, TableContainer, TableRow,
     Tooltip
 } from "@mui/material";
 import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../../abstract-device/AbstractDevice";
 import _ from "lodash";
 import {ColorLens, Light, LightMode, MoreVert, Nightlight} from "@mui/icons-material";
+import {theme} from "../../../theme";
+import {BareTable, BareTableCell, BareTableRow} from "../../../ui/table/BareTable";
 
 interface LightComponentProps extends IAbstractDeviceProps {
     idBridge: string,
@@ -144,41 +146,54 @@ class LightComponent extends AbstractDevice<LightComponentProps, LightComponentS
         let stateCommands = (
             <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '38px' }} />
         );
-        let bgColor = "white";
 
         if (!_.isNil(this.state) && !_.isNil(this.state.lightState)) {
             stateCommands = (
                 <Stack spacing={2} margin={2} direction="row" sx={{ mb: 1, width: '100%' }} alignItems="center">
-                    <Nightlight />
-                    <Slider
-                        aria-label="intensity"
-                        defaultValue={this.state.brightness}
-                        valueLabelDisplay="auto"
-                        min={0}
-                        max={100}
-                        onChange={_.debounce(this.setLightIntensity.bind(this), 500)}
-                    />
-                    <LightMode />
-                    <Tooltip title={"Définir une couleur"}>
-                        <IconButton
-                            size="small"
-                            id={"hue-light-component-palette-" + this.props.id}
-                            onClick={(event) => { this.setState({isPaletteOpen: true }) }}
-                        >
-                            <ColorLens />
-                        </IconButton>
-                    </Tooltip>
+                    <BareTable>
+                        <TableBody>
+                            <BareTableRow>
+                                <BareTableCell align="left">
+                                    <Nightlight />
+                                </BareTableCell>
+                                <BareTableCell align="right">
+                                    <LightMode />
+                                </BareTableCell>
+                                <BareTableCell align="right">
+                                    {/* */}
+                                </BareTableCell>
+                            </BareTableRow>
+                            <BareTableRow>
+                                <BareTableCell colSpan={2}>
+                                    <Slider
+                                        aria-label="intensity"
+                                        defaultValue={this.state.brightness}
+                                        valueLabelDisplay="auto"
+                                        min={0}
+                                        max={100}
+                                        onChange={_.debounce(this.setLightIntensity.bind(this), 500)}
+                                    />
+                                </BareTableCell>
+                                <BareTableCell align="center">
+                                    <Tooltip title={"Définir une couleur"}>
+                                        <IconButton
+                                            size="small"
+                                            id={"hue-light-component-palette-" + this.props.id}
+                                            onClick={(event) => { this.setState({isPaletteOpen: true }) }}
+                                        >
+                                            <ColorLens />
+                                        </IconButton>
+                                    </Tooltip>
+                                </BareTableCell>
+                            </BareTableRow>
+                        </TableBody>
+                    </BareTable>
                 </Stack>
             );
-            if (this.state.power === 'on') {
-                bgColor = "#49fdba";
-            } else {
-                bgColor = "white";
-            }
         }
 
         return (
-            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
+            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: theme.palette.background.paper }}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
@@ -204,11 +219,13 @@ class LightComponent extends AbstractDevice<LightComponentProps, LightComponentS
                     }
                 />
                 <CardContent>
-                    {this.renderError()}
+                    {/* */}
                 </CardContent>
                 <CardActions sx={{ width: '100%' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1, width: '100%' }}>
-                        {stateCommands}
+                        { !this.state.hasRisenAnError ?
+                            stateCommands : this.renderError()
+                        }
                     </Box>
                 </CardActions>
             </Card>

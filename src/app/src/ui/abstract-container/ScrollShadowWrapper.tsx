@@ -1,4 +1,4 @@
-import { ReactNode, RefObject, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 
 export interface ScrollShadowWrapperProps {
   children: ReactNode

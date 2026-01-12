@@ -24,6 +24,7 @@ import _ from "lodash";
 
 import ScheduleApiClient from "../api-client/clients/ScheduleApiClient";
 import SceneApiClient from "../api-client/clients/SceneApiClient";
+import Page from "../ui/page/Page";
 
 type Schedule = any;
 type Scene = any;
@@ -134,13 +135,15 @@ export default class SchedulesPage extends Component<{}, State> {
         const { schedules, scenes, isCreateOpen, cronExpression, mode, sceneId, route, httpVerb, argsJson } = this.state;
 
         return (
-            <Box>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                    <Typography variant="h5">Programmes</Typography>
+            <Page
+                title="Programmes"
+                subtitle="Planifiez des routines ou des appels API avancés."
+                right={
                     <Button variant="contained" startIcon={<AddIcon />} onClick={this.openCreate}>
                         Nouveau programme
                     </Button>
-                </Stack>
+                }
+            >
 
                 <Stack spacing={1}>
                     {schedules.map((s: any) => (
@@ -245,7 +248,7 @@ export default class SchedulesPage extends Component<{}, State> {
                         </Button>
                     </DialogActions>
                 </Dialog>
-            </Box>
+            </Page>
         );
     }
 }

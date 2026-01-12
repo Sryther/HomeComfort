@@ -1,0 +1,13 @@
+**/node_modules
+**/dist
+**/build
+**/.cache
+**/.next
+**/.turbo
+**/.git
+**/.DS_Store
+**/*.log
+coverage
+.vscode
+.idea
+*.zip

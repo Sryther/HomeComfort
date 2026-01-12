@@ -41,6 +41,7 @@ import {IoWaterOutline} from "react-icons/io5";
 import {WiHumidity} from "react-icons/wi";
 import {v4 as uuidv4} from "uuid";
 import AirApiClient from "../../api-client/clients/AirApiClient";
+import {theme} from "../../theme";
 
 interface IAirDaikinComponentProps extends IAbstractDeviceProps {
     id: string,
@@ -358,7 +359,7 @@ class AirDaikinComponent extends AbstractDevice<IAirDaikinComponentProps, IAirDa
         }
 
         return (
-            <Card sx={{ m: 0.5, 'minWidth': '30%' }}>
+            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: theme.palette.background.paper }}>
                 {this.renderMenu(this.getPossibleActions())}
                 {this.renderInformationModal()}
                 <CardHeader
@@ -387,7 +388,6 @@ class AirDaikinComponent extends AbstractDevice<IAirDaikinComponentProps, IAirDa
                     }
                 />
                 <CardContent sx={{ flex: '1 0 auto', width: '100%' }}>
-                    {this.renderError()}
                     <Popover
                         open={this.state.isAdditionalInformationOpen}
                         anchorEl={this.state.additionalInformationAnchorEl}
@@ -449,7 +449,8 @@ class AirDaikinComponent extends AbstractDevice<IAirDaikinComponentProps, IAirDa
                 </CardContent>
                 <CardActions sx={{ width: '100%' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {!_.isNil(this.state) && !_.isNil(this.state.acControl) ?
+                        {this.renderError()}
+                        {!_.isNil(this.state) && !_.isNil(this.state.acControl) && !this.state.hasRisenAnError ?
                             <Box>
                                 <Tooltip title="Diminuer la température désirée">
                                     <IconButton color="primary" aria-label="previous" onClick={() => { this.changeTemp.bind(this)(-0.5) }}>

@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import {
-    Box,
     Card,
     CardContent,
     Stack,
@@ -13,6 +12,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import moment from "moment";
 
 import EventApiClient from "../api-client/clients/EventApiClient";
+import Page from "../ui/page/Page";
 
 interface State {
     events: any[];
@@ -30,11 +30,7 @@ export default class HistoryPage extends Component<{}, State> {
         const { events } = this.state;
 
         return (
-            <Box>
-                <Typography variant="h5" sx={{ mb: 2 }}>
-                    Historique
-                </Typography>
-
+            <Page title="Historique" subtitle="Les dernières actions envoyées par l’application.">
                 <Stack spacing={1}>
                     {events.map((e: any) => (
                         <Card key={e._id} sx={{ m: 0.5 }}>
@@ -65,7 +61,7 @@ export default class HistoryPage extends Component<{}, State> {
                         </Card>
                     ))}
                 </Stack>
-            </Box>
+            </Page>
         );
     }
 }

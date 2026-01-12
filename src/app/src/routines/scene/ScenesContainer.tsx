@@ -1,8 +1,8 @@
 import SceneComponent from "./SceneComponent";
 import SceneApiClient from "../../api-client/clients/SceneApiClient";
-import AbstractContainer from "../../devices/abstract-container/AbstractContainer";
+import AbstractContainer from "../../ui/abstract-container/AbstractContainer";
 
-class CleanContainer extends AbstractContainer<any, any> {
+class ScenesContainer extends AbstractContainer<any, any> {
     async getData() {
         return await SceneApiClient.getInstance().all();
     }
@@ -12,4 +12,4 @@ class CleanContainer extends AbstractContainer<any, any> {
     }
 }
 
-export default CleanContainer;
+export default ScenesContainer;

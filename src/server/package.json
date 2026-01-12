@@ -29,7 +29,7 @@
     "morgan": "^1.10.0",
     "node-gzip": "^1.1.2",
     "node-hue-api": "^5.0.0-beta.13",
-    "ping": "^0.4.1",
+    "ping": "^1.0.0",
     "redoc-express": "^1.0.0",
     "serialport": "^9.2.8",
     "tinkerhub-discovery": "^0.6.0",

@@ -1,9 +1,10 @@
 import React, { Component } from "react";
-import { Box, Card, CardContent, Stack, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
+import { Chip, Card, CardContent, Stack, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
 import _ from "lodash";
 
 import SceneApiClient from "../api-client/clients/SceneApiClient";
 import ScheduleApiClient from "../api-client/clients/ScheduleApiClient";
+import Page from "../ui/page/Page";
 
 type Schedule = any;
 type Scene = any;
@@ -67,11 +68,7 @@ export default class RoutinesPage extends Component<{}, State> {
         const { scenes, schedules, isAddOpen, cronExpression } = this.state;
 
         return (
-            <Box>
-                <Typography variant="h5" sx={{ mb: 2 }}>
-                    Routines
-                </Typography>
-
+            <Page title="Routines" subtitle="Déclenchez plusieurs actions en un clic, et planifiez-les si besoin.">
                 <Stack spacing={1}>
                     {scenes.map((sc: any) => {
                         const linked = schedules.filter((s: any) => s.action?.route === `/scene/${sc._id}` && s.action?.httpVerb === "POST");
@@ -88,9 +85,7 @@ export default class RoutinesPage extends Component<{}, State> {
 
                                         <Stack direction="row" spacing={1} flexWrap="wrap">
                                             {linked.map((s: any) => (
-                                                <Typography key={s._id} variant="caption" sx={{ border: "1px solid rgba(0,0,0,0.12)", borderRadius: 1, px: 1, py: 0.5 }}>
-                                                    {s.cronExpression}
-                                                </Typography>
+                                                <Chip key={s._id} size="small" label={s.cronExpression} variant="outlined" />
                                             ))}
                                         </Stack>
 
@@ -128,7 +123,7 @@ export default class RoutinesPage extends Component<{}, State> {
                         </Button>
                     </DialogActions>
                 </Dialog>
-            </Box>
+            </Page>
         );
     }
 }

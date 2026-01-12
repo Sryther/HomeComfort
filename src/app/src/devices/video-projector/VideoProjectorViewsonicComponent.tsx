@@ -6,12 +6,13 @@ import {
     Tooltip,
     CardActions,
     CardHeader,
-    Skeleton, CardContent
+    Skeleton, CardContent, Box
 } from "@mui/material";
 import {MoreVert, PowerSettingsNew} from "@mui/icons-material";
 import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../abstract-device/AbstractDevice";
 import {FcVideoProjector} from "react-icons/fc";
 import VideoProjectorApiClient from "../../api-client/clients/VideoProjectorApiClient";
+import {theme} from "../../theme";
 
 interface IVideoProjectorViewsonicComponentProps extends IAbstractDeviceProps {
     id: string,
@@ -90,20 +91,17 @@ class VideoProjectorViewsonicComponent extends AbstractDevice<IVideoProjectorVie
 
     render() {
         let powerButton = <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '38px' }} />;
-        let bgColor = "white";
 
         if (!_.isNil(this.state)) {
             if (this.state.power) {
-                bgColor = "#49fdba";
                 powerButton = (
                     <Tooltip title="Eteindre">
-                        <IconButton size="small" color="primary" onClick={() => { this.powerOff.bind(this)() }}>
-                            <PowerSettingsNew sx={{ color: 'red' }} />
+                        <IconButton size="small" color="secondary" onClick={() => { this.powerOff.bind(this)() }}>
+                            <PowerSettingsNew sx={{ color: theme.palette.secondary.main }} />
                         </IconButton>
                     </Tooltip>
                 );
             } else {
-                bgColor = "white";
                 powerButton = (
                     <Tooltip title="Allumer">
                         <IconButton size="small" color="primary" onClick={() => { this.powerOn.bind(this)() }}>
@@ -119,7 +117,7 @@ class VideoProjectorViewsonicComponent extends AbstractDevice<IVideoProjectorVie
         }
 
         return (
-            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
+            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: theme.palette.background.paper }}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
@@ -141,10 +139,14 @@ class VideoProjectorViewsonicComponent extends AbstractDevice<IVideoProjectorVie
                     }
                 />
                 <CardContent>
-                    {this.renderError()}
+                    {/**/}
                 </CardContent>
                 <CardActions sx={{width: '100%'}}>
-                    {powerButton}
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        { !this.state.hasRisenAnError ?
+                            powerButton : this.renderError()
+                        }
+                    </Box>
                 </CardActions>
             </Card>
         )

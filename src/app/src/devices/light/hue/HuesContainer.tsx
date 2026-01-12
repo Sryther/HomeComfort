@@ -1,8 +1,8 @@
 import HueApiClient from "../../../api-client/clients/HueApiClient";
-import AbstractContainer from "../../abstract-container/AbstractContainer";
+import AbstractContainer from "../../../ui/abstract-container/AbstractContainer";
 import BridgeComponent from "./BridgeComponent";
 
-class HueContainer extends AbstractContainer<any, any> {
+class HuesContainer extends AbstractContainer<any, any> {
     async getData() {
         return await HueApiClient.getInstance().allBridges();
     }
@@ -12,4 +12,4 @@ class HueContainer extends AbstractContainer<any, any> {
     }
 }
 
-export default HueContainer;
+export default HuesContainer;

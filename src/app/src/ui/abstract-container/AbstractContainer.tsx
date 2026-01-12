@@ -5,19 +5,19 @@ import './AbstractContainer.css';
 
 interface IAbstractContainerProps {}
 interface IAbstractContainerState {
-    devices: any[]
+    data: any[]
 }
 
 abstract class AbstractContainer<IProps extends IAbstractContainerProps, IState extends IAbstractContainerState> extends Component<IProps, IState> {
     state: any = {
-        devices: []
+        data: []
     }
 
     constructor(props: IProps) {
         super(props);
     }
 
-    abstract renderDevice(device: any): any;
+    abstract renderDevice(data: any): any;
     abstract getData(): Promise<any>;
 
     async componentDidMount() {
@@ -26,9 +26,7 @@ abstract class AbstractContainer<IProps extends IAbstractContainerProps, IState 
             if (!data || data.length === 0) throw new Error(
                 `[${this.constructor.name}] No devices found for this type of device.`
             )
-            this.setState({
-                devices: data
-            });
+            this.setState({ data });
         } catch(error) {
             console.error(error);
         }
@@ -37,7 +35,7 @@ abstract class AbstractContainer<IProps extends IAbstractContainerProps, IState 
     render() {
         return (
             <Stack className="container" direction="row" sx={{ width: '100%', display: 'flex' }}>
-                {this.state.devices.map(this.renderDevice)}
+                {this.state.data.map(this.renderDevice)}
             </Stack>
         )
     }

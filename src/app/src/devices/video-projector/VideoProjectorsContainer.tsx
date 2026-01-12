@@ -1,6 +1,6 @@
 import VideoProjectorViewsonicComponent from "./VideoProjectorViewsonicComponent";
 import VideoProjectorApiClient from "../../api-client/clients/VideoProjectorApiClient";
-import AbstractContainer from "../abstract-container/AbstractContainer";
+import AbstractContainer from "../../ui/abstract-container/AbstractContainer";
 
 class CleanContainer extends AbstractContainer<any, any> {
     async getData() {

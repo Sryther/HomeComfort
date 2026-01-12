@@ -11,6 +11,7 @@ import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../abs
 import {GoScreenFull} from "react-icons/go";
 import _ from "lodash";
 import ProjectionScreenApiClient from "../../api-client/clients/ProjectionScreenApiClient";
+import {theme} from "../../theme";
 
 interface IProjectionScreenLumeneComponentProps extends IAbstractDeviceProps {
     id: string,
@@ -77,7 +78,7 @@ class ProjectionScreenLumeneComponent extends AbstractDevice<IProjectionScreenLu
 
     render() {
         return (
-            <Card sx={{ m: 0.5, 'minWidth': '30%' }}>
+            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: theme.palette.background.paper }}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
@@ -99,21 +100,26 @@ class ProjectionScreenLumeneComponent extends AbstractDevice<IProjectionScreenLu
                     }
                 />
                 <CardContent>
-                    {this.renderError()}
+                    {/* */}
                 </CardContent>
                 <CardActions sx={{ width: '100%' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Tooltip title="Descendre">
-                            <IconButton color="primary" aria-label="down" onClick={() => { this.down.bind(this)() }}>
-                                <ArrowCircleDown />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Monter">
-                            <IconButton color="primary" aria-label="up" onClick={() => { this.up.bind(this)() }}>
-                                <ArrowCircleUp />
-                            </IconButton>
-                        </Tooltip>
-                    </Box>
+                    { !this.state.hasRisenAnError ?
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Tooltip title="Descendre">
+                                <IconButton color="primary" aria-label="down" onClick={() => { this.down.bind(this)() }}>
+                                    <ArrowCircleDown />
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Monter">
+                                <IconButton color="primary" aria-label="up" onClick={() => { this.up.bind(this)() }}>
+                                    <ArrowCircleUp />
+                                </IconButton>
+                            </Tooltip>
+                        </Box> :
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {this.renderError()}
+                        </Box>
+                    }
                 </CardActions>
             </Card>
         )

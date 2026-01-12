@@ -148,7 +148,7 @@ abstract class AbstractDevice<IProps extends IAbstractDeviceProps, IState extend
     renderError(): JSX.Element | null {
         return this.state.hasRisenAnError ? (
             <Alert severity="error">
-                <AlertTitle>Oops</AlertTitle>
+                {/*<AlertTitle>Oops</AlertTitle>*/}
                 Une erreur est survenue !
             </Alert>
         ) : null;

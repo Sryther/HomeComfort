@@ -22,6 +22,7 @@ import {BatteryCharging20, BatteryCharging30, BatteryCharging50, BatteryCharging
 import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../abstract-device/AbstractDevice";
 import {GiVacuumCleaner} from "react-icons/gi";
 import CleanApiClient from "../../api-client/clients/CleanApiClient";
+import {theme} from "../../theme";
 
 interface ICleaningRoborockComponentProps extends IAbstractDeviceProps {
     id: string,
@@ -131,7 +132,6 @@ class CleaningRoborockComponent extends AbstractDevice<ICleaningRoborockComponen
         let batteryLevelElem = <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '38px' }} />;
         let mainControlButtons = <div />;
         let endpointState = <Skeleton variant="text" animation="wave" sx={{ display: 'flex', width: '100%', height: '38px' }} />;
-        let bgColor = "white";
 
         if (!_.isNil(this.state)) {
             const iconBatteryPouleIReallyWant: any = this.state.charging ? iconPouleBatteriesInCharge : iconPouleBatteries;
@@ -169,7 +169,6 @@ class CleaningRoborockComponent extends AbstractDevice<ICleaningRoborockComponen
             );
 
             if (this.state.cleaning) {
-                bgColor = "#49fdba";
                 mainControlButtons = (
                     <Box>
                         {pauseButton}
@@ -180,12 +179,11 @@ class CleaningRoborockComponent extends AbstractDevice<ICleaningRoborockComponen
                 endpointState = (
                     <Tooltip title="Allumé">
                         <Icon>
-                            <PlayArrow sx={{color: "green" }} />
+                            <PlayArrow sx={{color: theme.palette.secondary.main }} />
                         </Icon>
                     </Tooltip>
                 );
             } else {
-                bgColor = "white";
                 mainControlButtons = (
                     <Box>
                         {playButton}
@@ -196,7 +194,7 @@ class CleaningRoborockComponent extends AbstractDevice<ICleaningRoborockComponen
         }
 
         return (
-            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
+            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: theme.palette.background.paper }}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
@@ -228,10 +226,15 @@ class CleaningRoborockComponent extends AbstractDevice<ICleaningRoborockComponen
                     }
                 />
                 <CardContent>
-                    {this.renderError()}
+                    {/* */}
                 </CardContent>
                 <CardActions sx={{ width: '100%' }}>
-                    { !_.isNil(this.state) ?
+                    { !this.state.hasRisenAnError ?
+                        <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
+                            {this.renderError()}
+                        </Box> : null
+                    }
+                    { !_.isNil(this.state) && !this.state.hasRisenAnError ?
                         <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
                             {mainControlButtons}
                         </Box>

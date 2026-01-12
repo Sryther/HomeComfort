@@ -1,8 +1,8 @@
 import NetworkEndpointComponent from "./NetworkEndpointComponent";
 import NetworkApiClient from "../../api-client/clients/NetworkApiClient";
-import AbstractContainer from "../abstract-container/AbstractContainer";
+import AbstractContainer from "../../ui/abstract-container/AbstractContainer";
 
-class NetworkContainer extends AbstractContainer<any, any> {
+class NetworksContainer extends AbstractContainer<any, any> {
     async getData() {
         return await NetworkApiClient.getInstance().allEndpoints();
     }
@@ -12,4 +12,4 @@ class NetworkContainer extends AbstractContainer<any, any> {
     }
 }
 
-export default NetworkContainer;
+export default NetworksContainer;

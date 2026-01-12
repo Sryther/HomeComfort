@@ -21,9 +21,9 @@ export const theme = createTheme({
         button: { textTransform: "none", fontWeight: 600 },
     },
     palette: {
-        mode: "dark", // passe à "light" si tu veux
-        primary: { main: "#38BDF8" }, // cyan
-        secondary: { main: "#A78BFA" }, // violet
+        mode: "dark",
+        primary: { main: "#38BDF8" },
+        secondary: { main: "#A78BFA" },
         background: {
             default: "#0B1220",
             paper: "#0F172A",

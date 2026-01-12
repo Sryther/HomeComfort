@@ -6,12 +6,13 @@ import {
     Tooltip,
     CardHeader,
     CardActions,
-    Skeleton, CardContent
+    Skeleton, CardContent, Box
 } from "@mui/material";
 import {MoreVert, PowerSettingsNew} from "@mui/icons-material";
 import AbstractDevice, {IAbstractDeviceProps, IAbstractDeviceState} from "../abstract-device/AbstractDevice";
 import {FaNetworkWired} from "react-icons/fa";
 import NetworkApiClient from "../../api-client/clients/NetworkApiClient";
+import {theme} from "../../theme";
 
 interface INetworkEndpointComponentProps extends IAbstractDeviceProps {
     id: string,
@@ -83,14 +84,12 @@ class NetworkEndpointComponent extends AbstractDevice<INetworkEndpointComponentP
 
         if (!_.isNil(this.state)) {
             if (this.state.alive) {
-                bgColor = "#49fdba";
                 powerButton = (
                     <Tooltip title="Allumé">
-                        <PowerSettingsNew sx={{ color: 'green' }}/>
+                        <PowerSettingsNew sx={{ color: theme.palette.secondary.main }} />
                     </Tooltip>
                 );
             } else {
-                bgColor = "white";
                 powerButton = (
                     <Tooltip title="Allumer">
                         <IconButton size="small" color="primary" onClick={() => { this.powerOn.bind(this)() }}>
@@ -106,7 +105,7 @@ class NetworkEndpointComponent extends AbstractDevice<INetworkEndpointComponentP
         }
 
         return (
-            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: bgColor }}>
+            <Card sx={{ m: 0.5, 'minWidth': '30%', backgroundColor: theme.palette.background.paper }}>
                 {this.renderMenu()}
                 {this.renderInformationModal()}
                 {this.renderBackdrop()}
@@ -128,10 +127,14 @@ class NetworkEndpointComponent extends AbstractDevice<INetworkEndpointComponentP
                     }
                 />
                 <CardContent>
-                    {this.renderError()}
+                    {/* */}
                 </CardContent>
                 <CardActions sx={{ width: '100%', display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
-                    {powerButton}
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    { !this.state.hasRisenAnError ?
+                        powerButton : this.renderError()
+                    }
+                    </Box>
                 </CardActions>
             </Card>
         )

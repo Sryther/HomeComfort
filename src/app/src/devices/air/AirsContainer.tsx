@@ -1,8 +1,8 @@
 import AirDaikinComponent from "./AirDaikinComponent";
 import AirApiClient from "../../api-client/clients/AirApiClient";
-import AbstractContainer from "../abstract-container/AbstractContainer";
+import AbstractContainer from "../../ui/abstract-container/AbstractContainer";
 
-class AirContainer extends AbstractContainer<any, any> {
+class AirsContainer extends AbstractContainer<any, any> {
     async getData() {
         return await AirApiClient.getInstance().allDaikins();
     }
@@ -12,4 +12,4 @@ class AirContainer extends AbstractContainer<any, any> {
     }
 }
 
-export default AirContainer;
+export default AirsContainer;

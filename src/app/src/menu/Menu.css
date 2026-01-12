@@ -5,15 +5,15 @@
 /* Position and sizing of burger button */
 .bm-burger-button {
     position: fixed;
-    width: 36px;
-    height: 30px;
+    width: 2em;
+    height: 2em;
     left: 36px;
     top: 36px;
 }
 
 /* Color/shape of burger icon bars on hover*/
 .bm-burger-bars-hover {
-    background: #008054;
+    background: #A78BFA;
 }
 
 /* Position and sizing of clickable cross button */
@@ -24,7 +24,7 @@
 
 /* Color/shape of close button cross */
 .bm-cross {
-    background: #00C27A;
+    background: #A78BFA;
 }
 
 /*
@@ -45,7 +45,7 @@ Note: Beware of modifying this element as it can break the animations - you shou
 
 /* Morph shape necessary with bubble or elastic */
 .bm-morph-shape {
-    fill: white;
+    fill: #0F172A;
 }
 
 /* Wrapper for item list */

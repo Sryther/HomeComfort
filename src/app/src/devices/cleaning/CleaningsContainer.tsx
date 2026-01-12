@@ -1,8 +1,8 @@
 import CleaningRoborockComponent from "./CleaningRoborockComponent";
 import CleanApiClient from "../../api-client/clients/CleanApiClient";
-import AbstractContainer from "../abstract-container/AbstractContainer";
+import AbstractContainer from "../../ui/abstract-container/AbstractContainer";
 
-class CleaningContainer extends AbstractContainer<any, any> {
+class CleaningsContainer extends AbstractContainer<any, any> {
     async getData() {
         return await CleanApiClient.getInstance().allRoborocks();
     }
@@ -12,4 +12,4 @@ class CleaningContainer extends AbstractContainer<any, any> {
     }
 }
 
-export default CleaningContainer;
+export default CleaningsContainer;

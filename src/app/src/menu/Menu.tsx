@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import BurgerMenu from "react-burger-menu";
 import { Link } from "react-router-dom";
 import "./Menu.css";
-import logo from "../small-logo.png";
+import logo from "../logo.png";
 
 interface State {
     isOpen: boolean;
