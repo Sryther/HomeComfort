@@ -3,6 +3,10 @@ import AirApiClient from "../../api-client/clients/AirApiClient";
 import AbstractContainer from "../../ui/abstract-container/AbstractContainer";
 
 class AirsContainer extends AbstractContainer<any, any> {
+    getName(): string {
+        return "AirsContainer";
+    }
+
     async getData() {
         return await AirApiClient.getInstance().allDaikins();
     }

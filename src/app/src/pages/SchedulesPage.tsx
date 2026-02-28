@@ -26,12 +26,9 @@ import ScheduleApiClient from "../api-client/clients/ScheduleApiClient";
 import SceneApiClient from "../api-client/clients/SceneApiClient";
 import Page from "../ui/page/Page";
 
-type Schedule = any;
-type Scene = any;
-
 interface State {
-    schedules: Schedule[] ;
-    scenes: Scene[];
+    schedules: any;
+    scenes: any;
     isCreateOpen: boolean;
 
     // Create form

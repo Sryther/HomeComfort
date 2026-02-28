@@ -3,6 +3,10 @@ import NetworkApiClient from "../../api-client/clients/NetworkApiClient";
 import AbstractContainer from "../../ui/abstract-container/AbstractContainer";
 
 class NetworksContainer extends AbstractContainer<any, any> {
+    getName(): string {
+        return "NetworksContainer";
+    }
+
     async getData() {
         return await NetworkApiClient.getInstance().allEndpoints();
     }

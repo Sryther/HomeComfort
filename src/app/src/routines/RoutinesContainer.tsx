@@ -5,7 +5,7 @@ import RoutineComponent from "./RoutineComponent";
 import EmptyState from "../ui/state/EmptyState";
 
 interface State {
-    scenes: any[];
+    scenes: any;
 }
 
 export default class RoutinesContainer extends Component<{}, State> {

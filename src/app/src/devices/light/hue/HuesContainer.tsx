@@ -3,6 +3,10 @@ import AbstractContainer from "../../../ui/abstract-container/AbstractContainer"
 import BridgeComponent from "./BridgeComponent";
 
 class HuesContainer extends AbstractContainer<any, any> {
+    getName(): string {
+        return "HuesContainer";
+    }
+
     async getData() {
         return await HueApiClient.getInstance().allBridges();
     }

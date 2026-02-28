@@ -2,7 +2,11 @@ import VideoProjectorViewsonicComponent from "./VideoProjectorViewsonicComponent
 import VideoProjectorApiClient from "../../api-client/clients/VideoProjectorApiClient";
 import AbstractContainer from "../../ui/abstract-container/AbstractContainer";
 
-class CleanContainer extends AbstractContainer<any, any> {
+class VideoProjectorsContainer extends AbstractContainer<any, any> {
+    getName(): string {
+        return "VideoProjectorsContainer";
+    }
+
     async getData() {
         return await VideoProjectorApiClient.getInstance().allViewsonics();
     }
@@ -12,4 +16,4 @@ class CleanContainer extends AbstractContainer<any, any> {
     }
 }
 
-export default CleanContainer;
+export default VideoProjectorsContainer;

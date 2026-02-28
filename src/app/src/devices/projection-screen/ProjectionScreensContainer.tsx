@@ -3,6 +3,10 @@ import ProjectionScreenApiClient from "../../api-client/clients/ProjectionScreen
 import AbstractContainer from "../../ui/abstract-container/AbstractContainer";
 
 class ProjectionScreensContainer extends AbstractContainer<any, any> {
+    getName(): string {
+        return "ProjectionScreensContainer";
+    }
+
     async getData() {
         return await ProjectionScreenApiClient.getInstance().allLumenes();
     }

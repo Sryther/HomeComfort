@@ -6,12 +6,9 @@ import SceneApiClient from "../api-client/clients/SceneApiClient";
 import ScheduleApiClient from "../api-client/clients/ScheduleApiClient";
 import Page from "../ui/page/Page";
 
-type Schedule = any;
-type Scene = any;
-
 interface State {
-    scenes: Scene[];
-    schedules: Schedule[];
+    scenes: any;
+    schedules: any;
 
     isAddOpen: boolean;
     targetSceneId?: string;

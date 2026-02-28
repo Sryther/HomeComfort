@@ -19,13 +19,17 @@ abstract class AbstractContainer<IProps extends IAbstractContainerProps, IState 
 
     abstract renderDevice(data: any): any;
     abstract getData(): Promise<any>;
+    abstract getName(): string;
 
     async componentDidMount() {
         try {
             const { data } = await this.getData();
-            if (!data || data.length === 0) throw new Error(
-                `[${this.constructor.name}] No devices found for this type of device.`
-            )
+            if (!data || data.length === 0) {
+                this.setState({ data: [] });
+                throw new Error(
+                    `[${this.getName()}] No devices found for this type of device.`
+                )
+            }
             this.setState({ data });
         } catch(error) {
             console.error(error);
