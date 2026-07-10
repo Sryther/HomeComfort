@@ -8,7 +8,9 @@ class ScenesContainer extends AbstractContainer<any, any> {
     }
 
     async getData() {
-        return await SceneApiClient.getInstance().all();
+        // AbstractContainer destructures `.data`, but SceneApiClient.all() now
+        // returns the array directly, so wrap it to keep the expected shape.
+        return { data: await SceneApiClient.getInstance().all() };
     }
 
     renderDevice(device: any) {

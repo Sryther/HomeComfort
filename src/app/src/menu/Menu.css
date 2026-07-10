@@ -9,6 +9,15 @@
     height: 2em;
     left: 36px;
     top: 36px;
+    z-index: 1200;
+}
+
+/* Tuck the burger into the corner on phones so it wastes less space. */
+@media (max-width: 600px) {
+    .bm-burger-button {
+        left: 16px;
+        top: 16px;
+    }
 }
 
 /* Color/shape of burger icon bars on hover*/

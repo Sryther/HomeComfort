@@ -22,7 +22,12 @@ class DevicesPage extends Component<IDevicesProps, IDevicesState> {
                 <Stack spacing={2} sx={{ display: 'flex' }}>
                     <AirsContainer key={"airContainer"} />
                     <HuesContainer key={"hueContainer"} />
-                    <Stack direction="row" key={"videoContainers"} sx={{ width: '100%', display: 'flex' }}>
+                    <Stack
+                        direction={{ xs: 'column', md: 'row' }}
+                        spacing={2}
+                        key={"videoContainers"}
+                        sx={{ width: '100%', display: 'flex' }}
+                    >
                         <NetworksContainer key={"endpointContainer"} />
                         <ProjectionScreensContainer key={"projectionScreenContainer"} />
                         <VideoProjectorContainer key={"videoProjectorContainer"} />

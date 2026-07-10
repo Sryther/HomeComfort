@@ -202,11 +202,14 @@ abstract class AbstractDevice<IProps extends IAbstractDeviceProps, IState extend
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    width: 600,
+                    width: { xs: '92vw', sm: 600 },
+                    maxWidth: '100%',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
                     bgcolor: 'background.paper',
                     boxShadow: 24,
                     borderRadius: '5px',
-                    p: 4,
+                    p: { xs: 2, sm: 4 },
                 }}>
                     <TextField
                         sx={{"width": "100%"}}

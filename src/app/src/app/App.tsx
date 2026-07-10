@@ -29,18 +29,16 @@ class App extends Component<IAppProps, IAppState> {
     }
 
     componentDidMount() {
+        // Fonts only. The viewport meta (incl. viewport-fit=cover) is defined in
+        // index.html; don't re-inject it here or it overwrites that configuration.
         const $linkInter = document.createElement("link");
         const $linkIcon = document.createElement("link");
-        const $metaResponsive = document.createElement("meta");
         document.head.appendChild($linkInter);
         document.head.appendChild($linkIcon);
-        document.head.appendChild($metaResponsive);
         $linkInter.rel = "stylesheet";
         $linkInter.href = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";
         $linkIcon.rel = "stylesheet";
         $linkIcon.href = "https://fonts.googleapis.com/icon?family=Material+Icons";
-        $metaResponsive.name = "viewport";
-        $metaResponsive.content = "initial-scale=1, width=device-width";
     }
 
     render() {
@@ -49,7 +47,16 @@ class App extends Component<IAppProps, IAppState> {
                 <Toasts />
                 <HashRouter>
                     <Menu />
-                    <Container maxWidth="md">
+                    <Container
+                        maxWidth="md"
+                        sx={{
+                            // Top padding clears the fixed burger button; horizontal
+                            // padding tightens on phones.
+                            pt: { xs: 9, sm: 10 },
+                            px: { xs: 2, sm: 3 },
+                            pb: 6,
+                        }}
+                    >
                         <Routes>
                             <Route path="/" element={<Navigate to="/devices" replace />} />
                             <Route path="/devices" element={<DevicesPage />} />
