@@ -1,0 +1,196 @@
+name: Build and push OCI images
+
+on:
+  push:
+    tags:
+      - '*'   # Trigger on every tag (version tags, e.g. "1.0.0" or "v1.0.0")
+
+permissions:
+  contents: read           # required by actions/checkout
+  security-events: write   # required by upload-sarif to GitHub Security
+
+env:
+  REGISTRY: docker.io
+  NAMESPACE: sryther
+
+jobs:
+  meta:
+    name: Extract metadata from tag
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      is_latest: ${{ steps.latest.outputs.is_latest }}
+      highest: ${{ steps.latest.outputs.highest }}
+
+    steps:
+      - name: Checkout repository (full history for tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: meta
+        run: |
+          TAG="${GITHUB_REF_NAME}"   # e.g. "1.0.0" or "v1.0.0"
+          VERSION="${TAG#v}"         # strip an optional leading "v" => "1.0.0"
+
+          if [[ -z "${VERSION}" ]]; then
+            echo "ERROR: Could not derive a version from tag '${TAG}'."
+            exit 1
+          fi
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+          echo "Tag detected:"
+          echo "  Version: ${VERSION}"
+
+      - name: Determine if this version is semantically the latest
+        id: latest
+        run: |
+          git fetch --tags --force
+
+          VERSION="${{ steps.meta.outputs.version }}"
+
+          echo "Detecting highest version in the repository."
+
+          TAGS=$(git tag --list)
+
+          if [[ -z "${TAGS}" ]]; then
+            echo "No tags found; this is the latest version."
+            echo "is_latest=true" >> "$GITHUB_OUTPUT"
+            echo "highest=${VERSION}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Normalise tags (drop an optional leading "v") and pick the highest.
+          VERSIONS=$(printf '%s\n' ${TAGS} | sed 's/^v//')
+          HIGHEST=$(printf '%s\n' ${VERSIONS} | sort -V | tail -n1)
+
+          echo "highest=${HIGHEST}" >> "$GITHUB_OUTPUT"
+
+          if [[ "${VERSION}" == "${HIGHEST}" ]]; then
+            echo "This version matches the highest version: it is latest."
+            echo "is_latest=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "This version is not the highest: it is not latest."
+            echo "is_latest=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "Current: ${VERSION}, Highest: ${HIGHEST}"
+
+  build-and-push:
+    name: Build and push ${{ matrix.image }} (linux/arm/v7)
+    runs-on: ubuntu-latest
+    needs: meta
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: helix
+            context: src/server
+            file: src/server/image/Dockerfile
+          - image: helix-app
+            context: src/app
+            file: src/app/image/Dockerfile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check that the Dockerfile exists
+        run: |
+          if [[ ! -f "${{ matrix.file }}" ]]; then
+            echo "ERROR: Dockerfile not found at '${{ matrix.file }}'."
+            exit 1
+          fi
+          echo "Dockerfile found: ${{ matrix.file }}"
+
+      - name: Set up QEMU (arm/v7 emulation)
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          push: true
+          sbom: true
+          provenance: true
+          attests: type=sbom,generator=docker/scout-sbom-indexer:latest
+          platforms: linux/arm/v7
+          tags: |
+            ${{ env.NAMESPACE }}/${{ matrix.image }}:${{ needs.meta.outputs.version }}
+
+      - name: Tag image as latest (semantic version)
+        if: needs.meta.outputs.is_latest == 'true'
+        run: |
+          VERSION="${{ needs.meta.outputs.version }}"
+
+          echo "Tagging ${{ matrix.image }}:${VERSION} as latest (semantic highest)."
+
+          docker buildx imagetools create \
+            -t ${{ env.NAMESPACE }}/${{ matrix.image }}:latest \
+            ${{ env.NAMESPACE }}/${{ matrix.image }}:${VERSION}
+
+  sbom:
+    name: Generate SBOM for ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    needs:
+      - meta
+      - build-and-push
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [helix, helix-app]
+
+    steps:
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0.19.0
+        with:
+          image: ${{ env.NAMESPACE }}/${{ matrix.image }}:${{ needs.meta.outputs.version }}
+          output-file: sbom-${{ matrix.image }}-${{ needs.meta.outputs.version }}.spdx.json
+
+      - name: Upload SBOM as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.image }}-${{ needs.meta.outputs.version }}
+          path: sbom-${{ matrix.image }}-${{ needs.meta.outputs.version }}.spdx.json
+
+  security-scan:
+    name: Security scan ${{ matrix.image }} with Trivy
+    runs-on: ubuntu-latest
+    needs:
+      - meta
+      - build-and-push
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [helix, helix-app]
+
+    steps:
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.NAMESPACE }}/${{ matrix.image }}:${{ needs.meta.outputs.version }}
+          format: 'sarif'
+          output: trivy-${{ matrix.image }}-${{ needs.meta.outputs.version }}.sarif
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
+      - name: Upload Trivy scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ matrix.image }}-${{ needs.meta.outputs.version }}.sarif
+          category: trivy-${{ matrix.image }}
