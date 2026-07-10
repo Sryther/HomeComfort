@@ -68,7 +68,7 @@ export default class RoutinesPage extends Component<{}, State> {
             <Page title="Routines" subtitle="Déclenchez plusieurs actions en un clic, et planifiez-les si besoin.">
                 <Stack spacing={1}>
                     {scenes.map((sc: any) => {
-                        const linked = schedules.filter((s: any) => s.action?.route === `/scene/${sc._id}` && s.action?.httpVerb === "POST");
+                        const linked = schedules.filter((s: any) => s.action?.route === `/api/scene/${sc._id}` && s.action?.httpVerb === "POST");
 
                         return (
                             <Card key={sc._id} sx={{ m: 0.5 }}>
