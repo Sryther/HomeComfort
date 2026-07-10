@@ -94,7 +94,7 @@ export default class SchedulesPage extends Component<{}, State> {
             if (_.isNil(sceneId) || sceneId === "") return;
 
             action = {
-                route: `/scene/${sceneId}`,
+                route: `/api/scene/${sceneId}`,
                 httpVerb: "POST",
                 deviceId: sceneId,
                 deviceType: "scene",

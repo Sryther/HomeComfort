@@ -37,7 +37,8 @@ const removeSchedule = async (id: string): Promise<boolean> => {
     const schedule = await Schedule.findById(id);
     if (schedule) {
         console.log(`Deleting schedule ${schedule._id} for device ${schedule.action.deviceId} (${schedule.action.deviceType}): ${schedule.action.description}.`);
-        schedule.remove();
+        await schedule.remove();
+        return true;
     }
     return false;
 }
@@ -60,14 +61,31 @@ export default class CRONManager {
 
         for (const schedule of schedules) {
             log.info("CRON", `Scheduling job id=${schedule._id} cron="${schedule.cronExpression}"`);
-            const job = new Cron.CronJob(schedule.cronExpression, async () => {
-                return this.runJob(schedule);
-            });
-
-            job.start();
-
-            this.cronjobs.set(schedule._id, job);
+            this.register(schedule);
         }
+    }
+
+    /**
+     * Registers (and starts) a live CronJob for the given schedule, replacing any
+     * existing job with the same id. The job map is keyed by the string form of the
+     * schedule id so it can be looked up again on removal.
+     */
+    static register(schedule: ScheduleDocument): Cron.CronJob {
+        const id = String(schedule._id);
+
+        const existing = this.cronjobs.get(id);
+        if (existing !== undefined) {
+            existing.stop();
+        }
+
+        const job = new Cron.CronJob(schedule.cronExpression, () => {
+            return this.runJob(schedule);
+        });
+        job.start();
+
+        this.cronjobs.set(id, job);
+
+        return job;
     }
 
     static async runAction(action: ActionDocument) {
@@ -75,9 +93,18 @@ export default class CRONManager {
             console.log(`Invoking route ${action.httpVerb} ${action.route} with arguments: ${JSON.stringify(action.args)}`);
 
             const verb: Method = action.httpVerb as unknown as Method;
+
+            // Routes are mounted under `/api`, but the axios instance targets the
+            // server root (no prefix). Normalise here so stored routes work whether
+            // or not they already include the `/api` prefix (idempotent).
+            let url = action.route;
+            if (!url.startsWith("/api")) {
+                url = `/api${url.startsWith("/") ? "" : "/"}${url}`;
+            }
+
             const requestConfig: AxiosRequestConfig = {
                 method: verb,
-                url: action.route,
+                url: url,
                 headers: {
                     "helix": "self"
                 }
@@ -112,13 +139,7 @@ export default class CRONManager {
         try {
             const schedule = await addSchedule(deviceType, deviceId, cronExpression, description, route, httpVerb, args);
 
-            const job = new Cron.CronJob(cronExpression, () => {
-                return this.runJob(schedule);
-            });
-
-            job.start();
-
-            this.cronjobs.set(schedule._id, job);
+            this.register(schedule);
 
             return schedule;
         } catch (error) {

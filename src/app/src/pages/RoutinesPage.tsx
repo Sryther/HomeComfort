@@ -49,7 +49,7 @@ export default class RoutinesPage extends Component<{}, State> {
         await ScheduleApiClient.getInstance().create({
             cronExpression,
             action: {
-                route: `/scene/${targetSceneId}`,
+                route: `/api/scene/${targetSceneId}`,
                 httpVerb: "POST",
                 deviceId: targetSceneId,
                 deviceType: "scene",

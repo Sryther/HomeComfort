@@ -8,6 +8,13 @@ import {HelixRequest} from "../add-properties-to-request";
 
 const schedulesAndScenesInterceptor = async (req: HelixRequest, res: Response, next: NextFunction) => {
     try {
+        // The `/schedule` endpoints manage Schedule documents directly (their body
+        // carries an explicit `action` payload). Do NOT rewrite those requests into
+        // a device-action replay, otherwise the schedule would point back at itself.
+        if (/^\/api\/schedule(\/|$|\?)/.test(req.originalUrl)) {
+            return next();
+        }
+
         const params = Object.assign({}, req.body);
         delete params.cronExpression;
 

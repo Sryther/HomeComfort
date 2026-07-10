@@ -35,9 +35,10 @@ class SceneApiClient extends AbstractClient {
      * @return {Promise<any[]>} A promise that resolves to an array of data retrieved from the API.
      * @throws Will throw an error if the API request fails.
      */
-    async all(): Promise<AxiosResponse> {
+    async all(): Promise<any[]> {
         try {
-            return (await ApiClient.getInstance().get(`${this.baseUrl}`));
+            const res = await ApiClient.getInstance().get(`${this.baseUrl}`);
+            return res.data;
         } catch (error: any) {
             super.handleError(error,"Impossible de récupérer toutes les scènes.");
             throw error;
