@@ -88,22 +88,22 @@ jobs:
         include:
           - image: helix
             context: src/server
-            file: src/server/image/Dockerfile
+            file: src/server/image/Containerfile
           - image: helix-app
             context: src/app
-            file: src/app/image/Dockerfile
+            file: src/app/image/Containerfile
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check that the Dockerfile exists
+      - name: Check that the Containerfile exists
         run: |
           if [[ ! -f "${{ matrix.file }}" ]]; then
-            echo "ERROR: Dockerfile not found at '${{ matrix.file }}'."
+            echo "ERROR: Containerfile not found at '${{ matrix.file }}'."
             exit 1
           fi
-          echo "Dockerfile found: ${{ matrix.file }}"
+          echo "Containerfile found: ${{ matrix.file }}"
 
       - name: Set up QEMU (arm/v7 emulation)
         uses: docker/setup-qemu-action@v3
