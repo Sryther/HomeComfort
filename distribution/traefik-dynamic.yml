@@ -1,0 +1,32 @@
+# Traefik dynamic configuration.
+#
+# TLS: the self-signed certificate is set as the default certificate so it is
+# served for every request regardless of the requested hostname.
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /etc/traefik/certs/cert.crt
+        keyFile: /etc/traefik/certs/cert.key
+  certificates:
+    - certFile: /etc/traefik/certs/cert.crt
+      keyFile: /etc/traefik/certs/cert.key
+
+# HTTP routing for `server`. It runs on the host network, so it has no
+# Docker-network IP and cannot be discovered via container labels; it is routed
+# here through the Docker host gateway instead. The API is served under /api,
+# which is more specific than the app's catch-all "/" router, so it takes
+# precedence. The prefix is forwarded as-is (the server expects /api).
+http:
+  routers:
+    server:
+      rule: "PathPrefix(`/api`)"
+      entryPoints:
+        - websecure
+      service: server
+      tls: {}
+  services:
+    server:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3000"

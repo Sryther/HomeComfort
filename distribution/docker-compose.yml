@@ -1,5 +1,43 @@
 version: '3.1'
 services:
+  traefik:
+    # v2.x uses an older Go runtime that runs on 32-bit ARM; v3 segfaults there.
+    image: traefik:v2.11
+    restart: always
+    # Workaround for an outdated host libseccomp2 (e.g. Raspberry Pi OS Buster),
+    # which otherwise blocks syscalls the Go runtime needs and causes a SIGSEGV
+    # on startup. Proper fix: upgrade libseccomp2 on the host, then remove this.
+    security_opt:
+      - seccomp=unconfined
+    # `server` runs on the host network; reach it via the Docker host gateway
+    # (used by the file-provider service in traefik-dynamic.yml).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command:
+      # Docker provider: read routing from container labels only.
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # File provider: TLS certificate store (self-signed cert).
+      - "--providers.file.filename=/etc/traefik/dynamic/traefik-dynamic.yml"
+      # HTTP entrypoint, permanently redirected to HTTPS.
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      # HTTPS entrypoint.
+      - "--entrypoints.websecure.address=:443"
+    ports:
+      - mode: host
+        published: 80
+        target: 80
+      - mode: host
+        published: 443
+        target: 443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik-dynamic.yml:/etc/traefik/dynamic/traefik-dynamic.yml:ro
+      - ./cert.crt:/etc/traefik/certs/cert.crt:ro
+      - ./cert.key:/etc/traefik/certs/cert.key:ro
   server:
     image: sryther/helix
     restart: always
@@ -18,12 +56,21 @@ services:
   app:
     image: sryther/helix-app
     restart: always
-    ports:
-      - mode: host
-        published: 80
-        target: 3000
+    expose:
+      - "3000"
+    labels:
+      - "traefik.enable=true"
+      # Transparent catch-all router: forward every host/path to the app over HTTPS.
+      - "traefik.http.routers.app.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.app.entrypoints=websecure"
+      - "traefik.http.routers.app.tls=true"
+      - "traefik.http.services.app.loadbalancer.server.port=80"
+    # `server` runs on the host network, so reach it via the Docker host gateway
+    # rather than 127.0.0.1 (which would point at this container).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      API_HOST: http://127.0.0.1:3000
+      API_HOST: http://host.docker.internal:3000
   database:
     image: mongo
     restart: always
