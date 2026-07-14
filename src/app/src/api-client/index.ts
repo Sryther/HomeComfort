@@ -22,7 +22,7 @@ class ApiClient {
     private constructor() {
         let host = API_HOST;
         if (_.isNil(host)) {
-            host = `${document.location.origin.replace(/:[0-9]+/g, "")}:3000`;
+            host = `${document.location.origin.replace(/:[0-9]+/g, "")}`;
         }
         this.client = axios.create({
             baseURL: `${host}/api/`
